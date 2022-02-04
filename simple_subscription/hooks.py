@@ -57,8 +57,8 @@ required_apps = ["erpnext"]
 # Installation
 # ------------
 
-before_install = "simple_subscription.install.before_install"
-# after_install = "simple_subscription.install.after_install"
+# before_install = "simple_subscription.install.before_install"
+after_install = "simple_subscription.install.after_install"
 
 # Uninstallation
 # ------------

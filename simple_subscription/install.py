@@ -3,7 +3,9 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_field
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
 
-def before_install():
+def after_install():
+	make_property_setter("Sales Invoice", "from_date", "allow_on_submit", 0, "Check")
+	make_property_setter("Sales Invoice", "to_date", "allow_on_submit", 0, "Check")
 	create_custom_field(
 		"Sales Invoice",
 		dict(
@@ -15,11 +17,6 @@ def before_install():
 			read_only=1,
 		),
 	)
-	make_property_setter("Sales Invoice", "from_date", "allow_on_submit", 0, "Check")
-	make_property_setter("Sales Invoice", "to_date", "allow_on_submit", 0, "Check")
-
-
-def after_install():
 	copy_subscriptions()
 
 
