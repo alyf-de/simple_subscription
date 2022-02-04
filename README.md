@@ -8,11 +8,18 @@ How to:
 2. Select a **Customer**
 3. Add items to the table
 4. Select a **Sales Taxes and Charges Template**
-5. Save and submit
+5. Click "Save"
 
-New **Sales Invoices** will be generated at the beginning of every month for the previous month.
+Actions:
 
-If you need a **Sales Invoices** immediately, click the button "Create invoice for last month". 
+- Submit a **Simple Subscription** to start generating invoices.
+
+    - New invoices will be generated at the beginning of every month for the previous month.
+    - If you need an invoice immediately, click the button "Create invoice for last month".
+
+- Cancel a **Simple Subscription** to stop generating invoices.
+- Amend a cancelled **Simple Subscription** to change any values.
+
 #### License
 
 MIT
