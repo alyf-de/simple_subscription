@@ -8,6 +8,7 @@ app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "hallo@alyf.de"
 app_license = "MIT"
+required_apps = ["erpnext"]
 
 # Includes in <head>
 # ------------------
@@ -56,7 +57,7 @@ app_license = "MIT"
 # Installation
 # ------------
 
-# before_install = "simple_subscription.install.before_install"
+before_install = "simple_subscription.install.before_install"
 # after_install = "simple_subscription.install.after_install"
 
 # Uninstallation
@@ -76,11 +77,11 @@ app_license = "MIT"
 # Permissions evaluated in scripted ways
 
 # permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
+#	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
 # }
 #
 # has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
+#	"Event": "frappe.desk.doctype.event.event.has_permission",
 # }
 
 # DocType Class
@@ -88,7 +89,7 @@ app_license = "MIT"
 # Override standard doctype classes
 
 # override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
+#	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
 # Document Events
@@ -96,33 +97,17 @@ app_license = "MIT"
 # Hook on document methods and events
 
 # doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
+#	"*": {
+#		"on_update": "method",
+#		"on_cancel": "method",
+#		"on_trash": "method"
 #	}
 # }
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"simple_subscription.tasks.all"
-# 	],
-# 	"daily": [
-# 		"simple_subscription.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"simple_subscription.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"simple_subscription.tasks.weekly"
-# 	]
-# 	"monthly": [
-# 		"simple_subscription.tasks.monthly"
-# 	]
-# }
+scheduler_events = {"monthly": ["simple_subscription.tasks.monthly"]}
 
 # Testing
 # -------
@@ -133,14 +118,14 @@ app_license = "MIT"
 # ------------------------------
 #
 # override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "simple_subscription.event.get_events"
+#	"frappe.desk.doctype.event.event.get_events": "simple_subscription.event.get_events"
 # }
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
 # override_doctype_dashboards = {
-# 	"Task": "simple_subscription.task.get_dashboard_data"
+#	"Task": "simple_subscription.task.get_dashboard_data"
 # }
 
 # exempt linked doctypes from being automatically cancelled
@@ -151,31 +136,28 @@ app_license = "MIT"
 # User Data Protection
 # --------------------
 
-user_data_fields = [
-	{
-		"doctype": "{doctype_1}",
-		"filter_by": "{filter_by}",
-		"redact_fields": ["{field_1}", "{field_2}"],
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_2}",
-		"filter_by": "{filter_by}",
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_3}",
-		"strict": False,
-	},
-	{
-		"doctype": "{doctype_4}"
-	}
-]
+# user_data_fields = [
+#	{
+#		"doctype": "{doctype_1}",
+#		"filter_by": "{filter_by}",
+#		"redact_fields": ["{field_1}", "{field_2}"],
+#		"partial": 1,
+#	},
+#	{
+#		"doctype": "{doctype_2}",
+#		"filter_by": "{filter_by}",
+#		"partial": 1,
+#	},
+#	{
+#		"doctype": "{doctype_3}",
+#		"strict": False,
+#	},
+#	{"doctype": "{doctype_4}"},
+# ]
 
 # Authentication and authorization
 # --------------------------------
 
 # auth_hooks = [
-# 	"simple_subscription.auth.validate"
+#	"simple_subscription.auth.validate"
 # ]
-

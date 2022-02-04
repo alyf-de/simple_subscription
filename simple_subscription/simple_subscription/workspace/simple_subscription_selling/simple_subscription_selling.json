@@ -1,0 +1,50 @@
+{
+ "category": "Modules",
+ "charts": [],
+ "creation": "2022-02-04 17:41:35.278773",
+ "developer_mode_only": 0,
+ "disable_user_customization": 0,
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "extends": "Selling",
+ "extends_another_page": 1,
+ "hide_custom": 0,
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "label": "Simple Subscription Selling",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Selling",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Simple Subscription",
+   "link_to": "Simple Subscription",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2022-02-04 17:41:35.278773",
+ "modified_by": "Administrator",
+ "module": "Simple Subscription",
+ "name": "Simple Subscription Selling",
+ "owner": "Administrator",
+ "pin_to_bottom": 0,
+ "pin_to_top": 0,
+ "shortcuts": [
+  {
+   "doc_view": "List",
+   "label": "Simple Subscription",
+   "link_to": "Simple Subscription",
+   "type": "DocType"
+  }
+ ]
+}

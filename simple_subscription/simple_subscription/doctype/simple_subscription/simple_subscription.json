@@ -1,0 +1,81 @@
+{
+ "actions": [],
+ "autoname": "ABO-.#####",
+ "creation": "2022-02-04 16:13:31.955134",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer",
+  "customer_name",
+  "items",
+  "taxes_and_charges",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Simple Subscription Item"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Simple Subscription",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "taxes_and_charges",
+   "fieldtype": "Link",
+   "label": "Taxes and Charges",
+   "options": "Sales Taxes and Charges Template"
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer Name",
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [
+  {
+   "link_doctype": "Sales Invoice",
+   "link_fieldname": "simple_subscription"
+  }
+ ],
+ "modified": "2022-02-04 17:37:21.890422",
+ "modified_by": "Administrator",
+ "module": "Simple Subscription",
+ "name": "Simple Subscription",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
