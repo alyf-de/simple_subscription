@@ -2,7 +2,7 @@
 
 Easy setup: existing **Subscriptions** get copied from ERPNext (you have to cancel tham manually though)
 
-How to:
+### How to
 
 1. Create a new **Simple Subscription**
 2. Select a **Customer**
@@ -10,7 +10,7 @@ How to:
 4. Select a **Sales Taxes and Charges Template**
 5. Click "Save"
 
-Actions:
+### Actions
 
 - Submit a **Simple Subscription** to start generating invoices.
 
@@ -20,6 +20,7 @@ Actions:
 - Cancel a **Simple Subscription** to stop generating invoices.
 - Amend a cancelled **Simple Subscription** to change any values.
 
-#### License
 
-MIT
+---
+
+License: MIT
