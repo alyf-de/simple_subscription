@@ -20,7 +20,6 @@ Easy setup: existing **Subscriptions** get copied from ERPNext (you have to canc
 - Cancel a **Simple Subscription** to stop generating invoices.
 - Amend a cancelled **Simple Subscription** to change any values.
 
-
 ---
 
 License: MIT

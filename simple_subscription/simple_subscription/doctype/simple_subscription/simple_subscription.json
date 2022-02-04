@@ -8,7 +8,11 @@
  "field_order": [
   "customer",
   "customer_name",
+  "column_break_3",
+  "frequency",
+  "section_break_5",
   "items",
+  "section_break_7",
   "taxes_and_charges",
   "amended_from"
  ],
@@ -48,6 +52,24 @@
    "in_list_view": 1,
    "label": "Customer Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "frequency",
+   "fieldtype": "Select",
+   "label": "Frequency",
+   "options": "Monthly\nQuarterly\nHalfyearly\nYearly"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
   }
  ],
  "is_submittable": 1,
@@ -57,7 +79,7 @@
    "link_fieldname": "simple_subscription"
   }
  ],
- "modified": "2022-02-04 17:37:21.890422",
+ "modified": "2022-02-04 18:46:04.114040",
  "modified_by": "Administrator",
  "module": "Simple Subscription",
  "name": "Simple Subscription",
