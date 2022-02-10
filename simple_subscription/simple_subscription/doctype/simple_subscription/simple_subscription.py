@@ -71,7 +71,7 @@ def get_invoice_date(from_date: date, frequency: str) -> date:
 			02.10.2021 -> 01.10.2021
 			05.01.2022 -> 01.01.2022
 	"""
-	invoice_month = {
+	invoice_month_map = {
 		"Monthly": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
 		"Quarterly": [1, 1, 1, 4, 4, 4, 7, 7, 7, 10, 10, 10],
 		"Halfyearly": [1] * 6 + [7] * 6,
@@ -79,8 +79,6 @@ def get_invoice_date(from_date: date, frequency: str) -> date:
 	}
 
 	first_day_of_month = from_date.replace(day=1)
-	months_delta = (
-		first_day_of_month.month
-		- invoice_month[frequency][first_day_of_month.month - 1]
-	)
+	invoice_month = invoice_month_map[frequency][first_day_of_month.month - 1]
+	months_delta = first_day_of_month.month - invoice_month
 	return first_day_of_month - relativedelta(months=months_delta)
