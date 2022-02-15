@@ -1,15 +1,17 @@
 # Copyright (c) 2022, ALYF GmbH and contributors
 # For license information, please see license.txt
 from datetime import date, timedelta
-from typing import Tuple
 from dateutil.relativedelta import relativedelta
+from typing import Tuple
 
 import frappe
 from frappe.model.document import Document
 
+from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
+
 
 class SimpleSubscription(Document):
-	def create_invoice(self, from_date, to_date):
+	def create_invoice(self, from_date: date, to_date: date) -> SalesInvoice:
 		invoice = frappe.new_doc("Sales Invoice")
 		invoice.customer = self.customer
 		for row in self.items:
@@ -29,14 +31,14 @@ class SimpleSubscription(Document):
 
 
 @frappe.whitelist()
-def create_invoice_for_last_period(subscription_name):
+def create_invoice_for_last_period(subscription_name: str) -> SalesInvoice:
 	subscription = frappe.get_doc("Simple Subscription", subscription_name)
 	invoice_date = get_invoice_date(date.today(), subscription.frequency)
 	from_date, to_date = get_period(invoice_date, subscription.frequency)
 	return subscription.create_invoice(from_date, to_date)
 
 
-def process_subscriptions(frequency):
+def process_subscriptions(frequency: str) -> None:
 	invoice_date = get_invoice_date(date.today(), frequency)
 	from_date, to_date = get_period(invoice_date, frequency)
 	for subscription_name in frappe.get_all(
@@ -68,8 +70,8 @@ def get_period(invoice_date: date, frequency: str) -> Tuple[date, date]:
 def get_invoice_date(from_date: date, frequency: str) -> date:
 	"""
 	Quarterly:
-			02.10.2021 -> 01.10.2021
-			05.01.2022 -> 01.01.2022
+	02.10.2021 -> 01.10.2021
+	05.01.2022 -> 01.01.2022
 	"""
 	invoice_month_map = {
 		"Monthly": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
