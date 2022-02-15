@@ -25,7 +25,7 @@ class SimpleSubscription(Document):
 		invoice.to_date = to_date
 		invoice.simple_subscription = self.name
 		invoice.set_missing_values()
-		invoice.insert()
+		return invoice.insert()
 
 
 @frappe.whitelist()
@@ -33,7 +33,7 @@ def create_invoice_for_last_period(subscription_name):
 	subscription = frappe.get_doc("Simple Subscription", subscription_name)
 	invoice_date = get_invoice_date(date.today(), subscription.frequency)
 	from_date, to_date = get_period(invoice_date, subscription.frequency)
-	subscription.create_invoice(from_date, to_date)
+	return subscription.create_invoice(from_date, to_date)
 
 
 def process_subscriptions(frequency):
