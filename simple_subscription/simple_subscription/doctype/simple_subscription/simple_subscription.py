@@ -17,7 +17,7 @@ class SimpleSubscription(Document):
 				"items",
 				{
 					"item_code": row.item,
-					"quantity": row.qty,
+					"qty": row.qty,
 				},
 			)
 		invoice.taxes_and_charges = self.taxes_and_charges
