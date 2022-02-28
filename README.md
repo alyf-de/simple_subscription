@@ -1,6 +1,6 @@
 ## Simple Subscription
 
-Easy setup: existing **Subscriptions** get copied from ERPNext (you have to cancel tham manually though)
+Easy setup: existing **Subscriptions** get copied from ERPNext (you have to cancel them manually though)
 
 ### How to
 
