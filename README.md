@@ -17,8 +17,8 @@ Easy setup: existing **Subscriptions** get copied from ERPNext (you have to canc
     - New invoices will be generated at the beginning of every month for the previous month.
     - If you need an invoice immediately, click the button "Create invoice for last month".
 
-- Cancel a **Simple Subscription** to stop generating invoices.
-- Amend a cancelled **Simple Subscription** to change any values.
+- Mark a **Simple Subscription** as _disabled_ stop generating invoices.
+- Duplicate a disabled **Simple Subscription** to change any values.
 
 ---
 

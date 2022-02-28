@@ -10,6 +10,7 @@
   "customer_name",
   "column_break_3",
   "frequency",
+  "disabled",
   "section_break_5",
   "items",
   "section_break_7",
@@ -70,6 +71,16 @@
   {
    "fieldname": "section_break_7",
    "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "depends_on": "eval:doc.docstatus === 1;",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Disabled",
+   "no_copy": 1
   }
  ],
  "is_submittable": 1,
@@ -79,7 +90,7 @@
    "link_fieldname": "simple_subscription"
   }
  ],
- "modified": "2022-02-04 18:46:04.114040",
+ "modified": "2022-02-28 18:34:44.935216",
  "modified_by": "Administrator",
  "module": "Simple Subscription",
  "name": "Simple Subscription",
@@ -99,5 +110,6 @@
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "track_changes": 1
 }

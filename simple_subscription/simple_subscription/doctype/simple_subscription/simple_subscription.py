@@ -5,6 +5,7 @@ from dateutil.relativedelta import relativedelta
 from typing import Tuple
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
@@ -12,6 +13,19 @@ from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
 
 class SimpleSubscription(Document):
 	def create_invoice(self, from_date: date, to_date: date) -> SalesInvoice:
+		msg = None
+		if self.disabled:
+			msg = _("Please enable Subscription {0} before creating a Sales Invoice.")
+
+		if self.docstatus == 0:
+			msg = _("Please submit Subscription {0} before creating a Sales Invoice.")
+
+		if self.docstatus == 2:
+			msg = _("Please amend Subscription {0} before creating a Sales Invoice.")
+
+		if msg:
+			frappe.throw(msg.format(self.name))
+
 		invoice = frappe.new_doc("Sales Invoice")
 		invoice.customer = self.customer
 		for row in self.items:
@@ -43,11 +57,15 @@ def process_subscriptions(frequency: str) -> None:
 	from_date, to_date = get_period(invoice_date, frequency)
 	for subscription_name in frappe.get_all(
 		"Simple Subscription",
-		filters={"docstatus": 1, "frequency": frequency},
+		filters={"docstatus": 1, "frequency": frequency, "disabled": ("!=", 1)},
 		pluck="name",
 	):
 		subscription = frappe.get_doc("Simple Subscription", subscription_name)
-		subscription.create_invoice(from_date, to_date)
+		try:
+			subscription.create_invoice(from_date, to_date)
+		except frappe.ValidationError:
+			frappe.log_error(frappe.get_traceback())
+			continue
 
 
 def get_period(invoice_date: date, frequency: str) -> Tuple[date, date]:
