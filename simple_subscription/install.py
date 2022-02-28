@@ -14,7 +14,6 @@ def after_install():
 			fieldtype="Link",
 			insert_after="to_date",
 			options="Simple Subscription",
-			read_only=1,
 		),
 	)
 	copy_subscriptions()
