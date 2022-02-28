@@ -20,7 +20,3 @@ Easy setup: existing **Subscriptions** get copied from ERPNext (you have to canc
 
 - Mark a **Simple Subscription** as _disabled_ stop generating invoices.
 - Duplicate a disabled **Simple Subscription** to change any values.
-
----
-
-License: MIT
