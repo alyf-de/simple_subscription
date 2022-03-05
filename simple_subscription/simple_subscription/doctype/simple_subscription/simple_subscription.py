@@ -56,16 +56,15 @@ class SimpleSubscription(Document):
 def create_invoice_for_last_period(subscription_name: str) -> SalesInvoice:
 	subscription = frappe.get_doc("Simple Subscription", subscription_name)
 	frequency = Frequency[subscription.frequency]
-	invoice_date = get_first_day_of_period(date.today(), frequency)
-	from_date, to_date = get_period_start_and_end_dates(
-		invoice_date, frequency
-	)
+	reference_date = get_first_day_of_period(date.today(), frequency)
+	from_date, to_date = get_period_start_and_end_dates(reference_date, frequency)
 	return subscription.create_invoice(from_date, to_date)
 
 
 def process_subscriptions(frequency: Frequency) -> None:
-	invoice_date = get_first_day_of_period(date.today(), frequency)
-	from_date, to_date = get_period_start_and_end_dates(invoice_date, frequency)
+	reference_date = get_first_day_of_period(date.today(), frequency)
+	from_date, to_date = get_period_start_and_end_dates(reference_date, frequency)
+
 	for subscription_name in frappe.get_all(
 		"Simple Subscription",
 		filters={"docstatus": 1, "frequency": frequency.name, "disabled": ("!=", 1)},
@@ -86,9 +85,7 @@ def get_period_start_and_end_dates(
 	`invoice_date` is expected to be the first day of the current period."""
 	first_day_of_month = invoice_date.replace(day=1)
 	last_day_of_period = first_day_of_month - timedelta(days=1)
-	first_day_of_period = first_day_of_month - relativedelta(
-		months=frequency.value
-	)
+	first_day_of_period = first_day_of_month - relativedelta(months=frequency.value)
 
 	return first_day_of_period, last_day_of_period
 
