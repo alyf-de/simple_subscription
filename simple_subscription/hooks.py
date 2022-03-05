@@ -108,7 +108,6 @@ after_install = "simple_subscription.install.after_install"
 # ---------------
 
 scheduler_events = {
-	"monthly": ["simple_subscription.tasks.monthly"],
 	"cron": {
 		# m h dom m dow
 		"0 0 1 * *": [	# At 12:00 AM, on day 1 of the month
