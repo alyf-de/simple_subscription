@@ -3,12 +3,20 @@
 from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
 from typing import Tuple
+from enum import Enum
 
 import frappe
 from frappe import _
 from frappe.model.document import Document
 
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
+
+
+class Frequency(Enum):
+	Monthly = 1
+	Quarterly = 3
+	Halfyearly = 6
+	Yearly = 12
 
 
 class SimpleSubscription(Document):
@@ -47,17 +55,20 @@ class SimpleSubscription(Document):
 @frappe.whitelist()
 def create_invoice_for_last_period(subscription_name: str) -> SalesInvoice:
 	subscription = frappe.get_doc("Simple Subscription", subscription_name)
-	invoice_date = get_invoice_date(date.today(), subscription.frequency)
-	from_date, to_date = get_period(invoice_date, subscription.frequency)
+	frequency = Frequency[subscription.frequency]
+	invoice_date = get_first_day_of_period(date.today(), frequency)
+	from_date, to_date = get_period_start_and_end_dates(
+		invoice_date, frequency
+	)
 	return subscription.create_invoice(from_date, to_date)
 
 
-def process_subscriptions(frequency: str) -> None:
-	invoice_date = get_invoice_date(date.today(), frequency)
-	from_date, to_date = get_period(invoice_date, frequency)
+def process_subscriptions(frequency: Frequency) -> None:
+	invoice_date = get_first_day_of_period(date.today(), frequency)
+	from_date, to_date = get_period_start_and_end_dates(invoice_date, frequency)
 	for subscription_name in frappe.get_all(
 		"Simple Subscription",
-		filters={"docstatus": 1, "frequency": frequency, "disabled": ("!=", 1)},
+		filters={"docstatus": 1, "frequency": frequency.name, "disabled": ("!=", 1)},
 		pluck="name",
 	):
 		subscription = frappe.get_doc("Simple Subscription", subscription_name)
@@ -68,34 +79,27 @@ def process_subscriptions(frequency: str) -> None:
 			continue
 
 
-def get_period(invoice_date: date, frequency: str) -> Tuple[date, date]:
-	frequency_map = {
-		"Monthly": 1,
-		"Quarterly": 3,
-		"Halfyearly": 6,
-		"Yearly": 12,
-	}
-
+def get_period_start_and_end_dates(
+	invoice_date: date, frequency: Frequency
+) -> Tuple[date, date]:
+	"""Return the first and last date of the previous period.
+	`invoice_date` is expected to be the first day of the current period."""
 	first_day_of_month = invoice_date.replace(day=1)
 	last_day_of_period = first_day_of_month - timedelta(days=1)
 	first_day_of_period = first_day_of_month - relativedelta(
-		months=frequency_map[frequency]
+		months=frequency.value
 	)
 
 	return first_day_of_period, last_day_of_period
 
 
-def get_invoice_date(from_date: date, frequency: str) -> date:
-	"""
-	Quarterly:
-	02.10.2021 -> 01.10.2021
-	05.01.2022 -> 01.01.2022
-	"""
+def get_first_day_of_period(from_date: date, frequency: Frequency) -> date:
+	"""Return the first day of the period containing `from_date`."""
 	invoice_month_map = {
-		"Monthly": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-		"Quarterly": [1, 1, 1, 4, 4, 4, 7, 7, 7, 10, 10, 10],
-		"Halfyearly": [1] * 6 + [7] * 6,
-		"Yearly": [1] * 12,
+		Frequency.Monthly: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+		Frequency.Quarterly: [1, 1, 1, 4, 4, 4, 7, 7, 7, 10, 10, 10],
+		Frequency.Halfyearly: [1, 1, 1, 1, 1, 1, 7, 7, 7, 7, 7, 7],
+		Frequency.Yearly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 	}
 
 	first_day_of_month = from_date.replace(day=1)
