@@ -1,6 +1,6 @@
 ## Simple Subscription
 
-Easy setup: existing **Subscriptions** get copied from ERPNext (you have to cancel tham manually though)
+Easy setup: existing **Subscriptions** get copied from ERPNext (you have to cancel them manually though)
 
 ### How to
 
@@ -15,8 +15,8 @@ Easy setup: existing **Subscriptions** get copied from ERPNext (you have to canc
 
 - Submit a **Simple Subscription** to start generating invoices.
 
-    - New invoices will be generated at the beginning of a period for the previous period.
-    - If you need an invoice immediately, click the button "Create invoice for last {month / quarter / year}".
+    - New invoices will automatically be generated on the first day of a period, for the previous period.
+    - If you need an invoice immediately, click the button "Create last {monthly / quarterly / yearly} invoice".
 
-- Mark a **Simple Subscription** as _disabled_ stop generating invoices.
+- Mark a **Simple Subscription** as _disabled_ to stop generating invoices.
 - Duplicate a disabled **Simple Subscription** to change any values.
