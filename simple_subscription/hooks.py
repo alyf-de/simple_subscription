@@ -108,21 +108,7 @@ after_install = "simple_subscription.install.after_install"
 # ---------------
 
 scheduler_events = {
-	"cron": {
-		# m h dom m dow
-		"0 0 1 * *": [	# At 12:00 AM, on day 1 of the month
-			"simple_subscription.tasks.monthly"
-		],
-		"0 0 1 1,4,7,10 *": [  # At 12:00 AM, on day 1 of the month, only in January, April, July, and October
-			"simple_subscription.tasks.quarterly"
-		],
-		"0 0 1 1,7 *": [  # At 12:00 AM, on day 1 of the month, only in January and July
-			"simple_subscription.tasks.halfyearly"
-		],
-		"0 0 1 1 *": [	# At 12:00 AM, on day 1 of the month, only in January
-			"simple_subscription.tasks.yearly"
-		],
-	},
+	"daily_long": "simple_subscription.simple_subscription.doctype.simple_subscription.simple_subscription.process_simple_subscriptions",
 }
 
 # 01.04.
