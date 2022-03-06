@@ -9,6 +9,7 @@
   "customer",
   "customer_name",
   "column_break_3",
+  "start_date",
   "frequency",
   "disabled",
   "section_break_5",
@@ -81,6 +82,12 @@
    "in_list_view": 1,
    "label": "Disabled",
    "no_copy": 1
+  },
+  {
+   "description": "Invoices will be generated for periods starting on or after this date.",
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
   }
  ],
  "is_submittable": 1,
@@ -90,7 +97,7 @@
    "link_fieldname": "simple_subscription"
   }
  ],
- "modified": "2022-02-28 18:34:44.935216",
+ "modified": "2022-03-06 19:25:25.511856",
  "modified_by": "Administrator",
  "module": "Simple Subscription",
  "name": "Simple Subscription",
