@@ -17,7 +17,7 @@ frappe.ui.form.on("Simple Subscription", {
 				args: {
 					subscription_name: frm.doc.name,
 				},
-				callback: function (r) {
+				always: function (r) {
 					frm.refresh();
 				},
 			})
