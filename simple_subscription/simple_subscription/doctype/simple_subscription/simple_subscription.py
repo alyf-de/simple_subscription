@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
-from typing import Tuple, Union
+from typing import Union
 from enum import Enum
 
 import frappe
@@ -57,7 +57,8 @@ def create_invoice_for_previous_period(subscription_name: str, silent=False):
 	subscription = frappe.get_doc("Simple Subscription", subscription_name)
 	frequency = Frequency[subscription.frequency]
 	reference_date = get_first_day_of_period(date.today(), frequency)
-	from_date, to_date = get_period_start_and_end_dates(reference_date, frequency)
+	to_date = reference_date - timedelta(days=1)
+	from_date = get_first_day_of_period(to_date, frequency)
 
 	if subscription.start_date > from_date:
 		if not silent:
@@ -109,18 +110,6 @@ def get_active_subscriptions():
 	)
 
 
-def get_period_start_and_end_dates(
-	invoice_date: date, frequency: Frequency
-) -> Tuple[date, date]:
-	"""Return the first and last date of the previous period.
-	`invoice_date` is expected to be the first day of the current period."""
-	first_day_of_month = invoice_date.replace(day=1)
-	last_day_of_period = first_day_of_month - timedelta(days=1)
-	first_day_of_period = first_day_of_month - relativedelta(months=frequency.value)
-
-	return first_day_of_period, last_day_of_period
-
-
 def get_first_day_of_period(from_date: date, frequency: Frequency) -> date:
 	"""Return the first day of the period containing `from_date`."""
 	invoice_month_map = {
@@ -133,4 +122,5 @@ def get_first_day_of_period(from_date: date, frequency: Frequency) -> date:
 	first_day_of_month = from_date.replace(day=1)
 	invoice_month = invoice_month_map[frequency][first_day_of_month.month - 1]
 	months_delta = first_day_of_month.month - invoice_month
+
 	return first_day_of_month - relativedelta(months=months_delta)
