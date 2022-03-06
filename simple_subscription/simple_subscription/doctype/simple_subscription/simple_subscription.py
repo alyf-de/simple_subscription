@@ -67,7 +67,7 @@ def create_invoice_for_previous_period(subscription_name: str, silent=False):
 			)
 		return
 
-	existing_si = get_existing_sales_invoice(subscription.name, from_date, to_date)
+	existing_si = get_existing_sales_invoice(subscription_name, from_date, to_date)
 	if existing_si:
 		if not silent:
 			frappe.throw(
@@ -96,8 +96,8 @@ def get_existing_sales_invoice(
 		{
 			"doctype": "Sales Invoice",
 			"simple_subscription": subscription_name,
-			"start_date": from_date,
-			"end_date": to_date,
+			"from_date": from_date,
+			"to_date": to_date,
 		}
 	)
 
