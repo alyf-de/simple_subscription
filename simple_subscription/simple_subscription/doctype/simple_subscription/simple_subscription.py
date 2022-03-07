@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
-from typing import Tuple
+from typing import Union
 from enum import Enum
 
 import frappe
@@ -53,41 +53,61 @@ class SimpleSubscription(Document):
 
 
 @frappe.whitelist()
-def create_invoice_for_last_period(subscription_name: str) -> SalesInvoice:
+def create_invoice_for_previous_period(subscription_name: str, silent=False):
 	subscription = frappe.get_doc("Simple Subscription", subscription_name)
 	frequency = Frequency[subscription.frequency]
 	reference_date = get_first_day_of_period(date.today(), frequency)
-	from_date, to_date = get_period_start_and_end_dates(reference_date, frequency)
-	return subscription.create_invoice(from_date, to_date)
+	to_date = reference_date - timedelta(days=1)
+	from_date = get_first_day_of_period(to_date, frequency)
+
+	if subscription.start_date > from_date:
+		if not silent:
+			frappe.throw(
+				_("Subscription started after the first day of the last period.")
+			)
+		return
+
+	existing_si = get_existing_sales_invoice(subscription_name, from_date, to_date)
+	if existing_si:
+		if not silent:
+			frappe.throw(
+				_("Sales Invoice already exists for this period: {}").format(
+					existing_si
+				)
+			)
+		return
+
+	subscription.create_invoice(from_date, to_date)
 
 
-def process_subscriptions(frequency: Frequency) -> None:
-	reference_date = get_first_day_of_period(date.today(), frequency)
-	from_date, to_date = get_period_start_and_end_dates(reference_date, frequency)
-
-	for subscription_name in frappe.get_all(
-		"Simple Subscription",
-		filters={"docstatus": 1, "frequency": frequency.name, "disabled": ("!=", 1)},
-		pluck="name",
-	):
-		subscription = frappe.get_doc("Simple Subscription", subscription_name)
+def process_simple_subscriptions() -> None:
+	for subscription_name in get_active_subscriptions():
 		try:
-			subscription.create_invoice(from_date, to_date)
+			create_invoice_for_previous_period(subscription_name, silent=True)
 		except frappe.ValidationError:
 			frappe.log_error(frappe.get_traceback())
 			continue
 
 
-def get_period_start_and_end_dates(
-	invoice_date: date, frequency: Frequency
-) -> Tuple[date, date]:
-	"""Return the first and last date of the previous period.
-	`invoice_date` is expected to be the first day of the current period."""
-	first_day_of_month = invoice_date.replace(day=1)
-	last_day_of_period = first_day_of_month - timedelta(days=1)
-	first_day_of_period = first_day_of_month - relativedelta(months=frequency.value)
+def get_existing_sales_invoice(
+	subscription_name: str, from_date: date, to_date: date
+) -> Union[str, None]:
+	return frappe.db.exists(
+		{
+			"doctype": "Sales Invoice",
+			"simple_subscription": subscription_name,
+			"from_date": from_date,
+			"to_date": to_date,
+		}
+	)
 
-	return first_day_of_period, last_day_of_period
+
+def get_active_subscriptions():
+	return frappe.get_all(
+		"Simple Subscription",
+		filters={"docstatus": 1, "disabled": ("!=", 1)},
+		pluck="name",
+	)
 
 
 def get_first_day_of_period(from_date: date, frequency: Frequency) -> date:
@@ -102,4 +122,5 @@ def get_first_day_of_period(from_date: date, frequency: Frequency) -> date:
 	first_day_of_month = from_date.replace(day=1)
 	invoice_month = invoice_month_map[frequency][first_day_of_month.month - 1]
 	months_delta = first_day_of_month.month - invoice_month
+
 	return first_day_of_month - relativedelta(months=months_delta)
