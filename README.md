@@ -6,17 +6,18 @@ Easy setup: existing **Subscriptions** get copied from ERPNext (you have to canc
 
 1. Create a new **Simple Subscription**
 2. Select a _Customer_
-2. Select a _Frequency_
-3. Add items to the table
-4. Select a _Sales Taxes and Charges Template_
-5. Click "Save"
+3. Set a _Start Date_
+4. Select a _Frequency_
+5. Add items to the table
+6. Select a _Sales Taxes and Charges Template_
+7. Click "Save"
 
 ### Actions
 
 - Submit a **Simple Subscription** to start generating invoices.
 
     - New invoices will automatically be generated on the first day of a period, for the previous period.
-    - If you need an invoice immediately, click the button "Create last {monthly / quarterly / yearly} invoice".
+    - If you need an invoice immediately, click the button "Create last {Monthly / Quarterly / Yearly} invoice".
 
 - Mark a **Simple Subscription** as _disabled_ to stop generating invoices.
 - Duplicate a disabled **Simple Subscription** to change any values.
