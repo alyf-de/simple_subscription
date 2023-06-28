@@ -67,8 +67,9 @@ def create_invoice_for_previous_period(subscription_name: str, silent=False):
 			)
 		return
 
-	existing_si = get_existing_sales_invoice(subscription_name, from_date, to_date)
-	if existing_si:
+	if existing_si := get_existing_sales_invoice(
+		subscription_name, from_date, to_date
+	):
 		if not silent:
 			frappe.throw(
 				_("Sales Invoice already exists for this period: {}").format(
