@@ -11,6 +11,14 @@ frappe.ui.form.on("Simple Subscription", {
 				},
 			};
 		});
+
+		frm.set_query("taxes_and_charges", function (doc) {
+			return {
+				filters: {
+					company: frm.doc.company,
+				},
+			};
+		});
 	},
 
 	refresh: function (frm) {

@@ -35,6 +35,7 @@ class SimpleSubscription(Document):
 			frappe.throw(msg.format(self.name))
 
 		invoice = frappe.new_doc("Sales Invoice")
+		invoice.company = self.company
 		invoice.customer = self.customer
 		for row in self.items:
 			invoice.append(
