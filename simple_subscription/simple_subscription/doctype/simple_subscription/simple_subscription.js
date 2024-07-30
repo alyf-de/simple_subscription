@@ -2,6 +2,17 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Simple Subscription", {
+	setup: function (frm) {
+		frm.set_query("item", "items", function () {
+			return {
+				filters: {
+					is_sales_item: 1,
+					has_variants: 0,
+				},
+			};
+		});
+	},
+
 	refresh: function (frm) {
 		if (frm.doc.docstatus !== 1 || frm.doc.disabled === 1) return;
 
