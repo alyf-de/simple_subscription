@@ -84,7 +84,7 @@ def create_current_invoice(subscription_name: str, silent=False):
 			)
 
 	if (
-		subscription.billing_time == "after end of period"
+		subscription.billing_time != "at beginning of period"
 		and subscription.start_date > from_date
 	):
 		if not silent:
