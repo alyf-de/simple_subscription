@@ -60,30 +60,49 @@ def create_current_invoice(subscription_name: str, silent=False):
 
 	# determine current billing period based on period_type and billing_time
 	if subscription.period_type == "calendar months":
-		current_period_start, current_period_end = get_calendar_period(date.today(), frequency)
-		if subscription.billing_time == "at beginning of period" :
+		current_period_start, current_period_end = get_calendar_period(
+			date.today(), frequency
+		)
+		if subscription.billing_time == "at beginning of period":
 			from_date, to_date = current_period_start, current_period_end
 		else:
-			from_date, to_date = get_calendar_period(current_period_start - timedelta(days=1), frequency)
+			from_date, to_date = get_calendar_period(
+				current_period_start - timedelta(days=1), frequency
+			)
 
 	else:
-		current_period_start, current_period_end = get_date_period(date.today(), frequency, subscription.start_date)
-		if subscription.billing_time == "at beginning of period" :
+		current_period_start, current_period_end = get_date_period(
+			date.today(), frequency, subscription.start_date
+		)
+		if subscription.billing_time == "at beginning of period":
 			from_date, to_date = current_period_start, current_period_end
 		else:
-			from_date, to_date = get_date_period(current_period_start - timedelta(days=1), frequency, subscription.start_date)
-	
-	
-	if (subscription.billing_time == "after end of period" and subscription.start_date > from_date):
+			from_date, to_date = get_date_period(
+				current_period_start - timedelta(days=1),
+				frequency,
+				subscription.start_date,
+			)
+
+	if (
+		subscription.billing_time == "after end of period"
+		and subscription.start_date > from_date
+	):
 		if not silent:
 			frappe.throw(
-				_(f"Subscription starts after the first day of the current period({from_date}).")
+				_(
+					f"Subscription starts after the first day of the current period({from_date})."
+				)
 			)
 		return
-	elif (subscription.billing_time == "at beginning of period" and subscription.start_date > to_date):
+	elif (
+		subscription.billing_time == "at beginning of period"
+		and subscription.start_date > to_date
+	):
 		if not silent:
 			frappe.throw(
-				_(f"Subscription started after the last day of the current period({to_date}).")
+				_(
+					f"Subscription started after the last day of the current period({to_date})."
+				)
 			)
 		return
 
@@ -129,6 +148,7 @@ def get_active_subscriptions():
 		pluck="name",
 	)
 
+
 def get_calendar_period(eval_date: date, frequency: Frequency) -> Tuple[date, date]:
 	"""Return the first day and last day of the period containing `from_date`."""
 	invoice_month_map = {
@@ -141,32 +161,50 @@ def get_calendar_period(eval_date: date, frequency: Frequency) -> Tuple[date, da
 		Frequency.Monthly: 1,
 		Frequency.Quarterly: 3,
 		Frequency.Halfyearly: 6,
-		Frequency.Yearly: 12
+		Frequency.Yearly: 12,
 	}
 
-	from_date = eval_date.replace(day=1, month= invoice_month_map[frequency][eval_date.month - 1])
-	to_date = from_date + relativedelta(months= no_of_month_map[frequency]) - relativedelta(days=1)
+	from_date = eval_date.replace(
+		day=1, month=invoice_month_map[frequency][eval_date.month - 1]
+	)
+	to_date = (
+		from_date
+		+ relativedelta(months=no_of_month_map[frequency])
+		- relativedelta(days=1)
+	)
 
 	return from_date, to_date
 
-def get_date_period(eval_date: date, frequency: Frequency, initial_date: date) -> Tuple[date, date]:
 
+def get_date_period(
+	eval_date: date, frequency: Frequency, initial_date: date
+) -> Tuple[date, date]:
 	no_of_month_map = {
 		Frequency.Monthly: 1,
 		Frequency.Quarterly: 3,
 		Frequency.Halfyearly: 6,
-		Frequency.Yearly: 12
+		Frequency.Yearly: 12,
 	}
-	
-	delta = relativedelta(eval_date , initial_date)
 
-	 # determine no of period eval_date lies in when starting on initial_date
+	delta = relativedelta(eval_date, initial_date)
+
+	# determine no of period eval_date lies in when starting on initial_date
 	if eval_date >= initial_date:
-		month_detla_floor = (delta.years * 12 + delta.months) // no_of_month_map[frequency]
+		month_detla_floor = (delta.years * 12 + delta.months) // no_of_month_map[
+			frequency
+		]
 	else:
-		month_detla_floor = (delta.years * 12 + delta.months - 1) // no_of_month_map[frequency] 
+		month_detla_floor = (delta.years * 12 + delta.months - 1) // no_of_month_map[
+			frequency
+		]
 
-	from_date = initial_date + relativedelta(months= (no_of_month_map[frequency] * month_detla_floor))	
-	to_date = from_date + relativedelta(months= no_of_month_map[frequency]) - relativedelta(days=1)
+	from_date = initial_date + relativedelta(
+		months=(no_of_month_map[frequency] * month_detla_floor)
+	)
+	to_date = (
+		from_date
+		+ relativedelta(months=no_of_month_map[frequency])
+		- relativedelta(days=1)
+	)
 
 	return from_date, to_date
