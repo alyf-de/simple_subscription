@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
-from typing import Union
+from typing import Union, Tuple
 from enum import Enum
 
 import frappe
@@ -54,12 +54,16 @@ class SimpleSubscription(Document):
 
 
 @frappe.whitelist()
-def create_invoice_for_previous_period(subscription_name: str, silent=False):
+def create_current_invoice(subscription_name: str, silent=False):
 	subscription = frappe.get_doc("Simple Subscription", subscription_name)
 	frequency = Frequency[subscription.frequency]
-	reference_date = get_first_day_of_period(date.today(), frequency)
-	to_date = reference_date - timedelta(days=1)
-	from_date = get_first_day_of_period(to_date, frequency)
+
+	current_period_start, current_period_end = get_period(date.today(), frequency)
+	
+	if subscription.billing_time == "at beginning of period" :
+		from_date, to_date = current_period_start, current_period_end
+	else:
+		from_date, to_date = get_period(current_period_start - timedelta(days=1))
 
 	if subscription.start_date > from_date:
 		if not silent:
@@ -84,7 +88,7 @@ def create_invoice_for_previous_period(subscription_name: str, silent=False):
 def process_simple_subscriptions() -> None:
 	for subscription_name in get_active_subscriptions():
 		try:
-			create_invoice_for_previous_period(subscription_name, silent=True)
+			create_current_invoice(subscription_name, silent=True)
 		except frappe.ValidationError:
 			frappe.log_error(frappe.get_traceback())
 			continue
@@ -110,18 +114,22 @@ def get_active_subscriptions():
 		pluck="name",
 	)
 
-
-def get_first_day_of_period(from_date: date, frequency: Frequency) -> date:
-	"""Return the first day of the period containing `from_date`."""
+def get_period(eval_date: date, frequency: Frequency) -> Tuple[date, date]:
+	"""Return the first day and last day of the period containing `from_date`."""
 	invoice_month_map = {
 		Frequency.Monthly: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
 		Frequency.Quarterly: [1, 1, 1, 4, 4, 4, 7, 7, 7, 10, 10, 10],
 		Frequency.Halfyearly: [1, 1, 1, 1, 1, 1, 7, 7, 7, 7, 7, 7],
 		Frequency.Yearly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 	}
+	no_of_month_map = {
+		Frequency.Monthly: 1,
+		Frequency.Quarterly: 3,
+		Frequency.Halfyearly: 6,
+		Frequency.Yearly: 12
+	}
 
-	first_day_of_month = from_date.replace(day=1)
-	invoice_month = invoice_month_map[frequency][first_day_of_month.month - 1]
-	months_delta = first_day_of_month.month - invoice_month
+	start_date = eval_date.replace(day=1, month= invoice_month_map[frequency][eval_date.month - 1])
+	end_date = start_date + relativedelta(months= no_of_month_map[frequency]) - relativedelta(days=1)
 
-	return first_day_of_month - relativedelta(months=months_delta)
+	return start_date, end_date
