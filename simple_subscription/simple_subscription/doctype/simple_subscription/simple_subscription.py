@@ -77,7 +77,13 @@ def create_current_invoice(subscription_name: str, silent=False):
 	if (subscription.billing_time == "after end of period" and subscription.start_date > from_date):
 		if not silent:
 			frappe.throw(
-				_(f"Subscription started after the first day of the last period({from_date}).")
+				_(f"Subscription starts after the first day of the current period({from_date}).")
+			)
+		return
+	elif (subscription.billing_time == "at beginning of period" and subscription.start_date > to_date):
+		if not silent:
+			frappe.throw(
+				_(f"Subscription started after the last day of the current period({to_date}).")
 			)
 		return
 
