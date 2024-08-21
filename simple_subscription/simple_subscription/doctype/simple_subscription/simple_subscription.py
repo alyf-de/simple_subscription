@@ -65,7 +65,8 @@ def create_current_invoice(subscription_name: str, silent=False):
 			from_date, to_date = current_period_start, current_period_end
 		else:
 			from_date, to_date = get_calendar_period(current_period_start - timedelta(days=1), frequency)
-	if subscription.period_type == "start date":
+
+	else:
 		current_period_start, current_period_end = get_date_period(date.today(), frequency, subscription.start_date)
 		if subscription.billing_time == "at beginning of period" :
 			from_date, to_date = current_period_start, current_period_end
@@ -73,11 +74,10 @@ def create_current_invoice(subscription_name: str, silent=False):
 			from_date, to_date = get_date_period(current_period_start - timedelta(days=1), frequency, subscription.start_date)
 	
 	
-
-	if subscription.start_date > from_date:
+	if (subscription.billing_time == "after end of period" and subscription.start_date > from_date):
 		if not silent:
 			frappe.throw(
-				_("Subscription started after the first day of the last period.")
+				_(f"Subscription started after the first day of the last period({from_date}).")
 			)
 		return
 

@@ -29,7 +29,7 @@ frappe.ui.form.on("Simple Subscription", {
 			null,
 			"Frequency of Subscription"
 		);
-		frm.add_custom_button(__("Create last {0} invoice", [translated_frequency]), () =>
+		frm.add_custom_button(__("Create current {0} invoice", [translated_frequency]), () =>
 			frappe.call({
 				method:
 					"simple_subscription.simple_subscription.doctype.simple_subscription.simple_subscription.create_current_invoice",
