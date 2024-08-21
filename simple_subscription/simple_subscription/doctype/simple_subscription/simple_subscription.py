@@ -59,49 +59,44 @@ def create_current_invoice(subscription_name: str, silent=False):
 	frequency = Frequency[subscription.frequency]
 
 	# determine current billing period based on period_type and billing_time
-	if subscription.period_type == "calendar months":
-		current_period_start, current_period_end = get_calendar_period(
-			date.today(), frequency
+	if (
+		subscription.period_type == "start date"
+		and subscription.billing_time == "at beginning of period"
+	):
+		from_date, to_date = get_date_period(
+			date.today(), frequency, subscription.start_date
 		)
-		if subscription.billing_time == "at beginning of period":
-			from_date, to_date = current_period_start, current_period_end
-		else:
-			from_date, to_date = get_calendar_period(
-				current_period_start - timedelta(days=1), frequency
-			)
-
-	else:
+	elif (
+		subscription.period_type == "start date"
+		and subscription.billing_time != "at beginning of period"
+	):
 		current_period_start, current_period_end = get_date_period(
 			date.today(), frequency, subscription.start_date
 		)
-		if subscription.billing_time == "at beginning of period":
-			from_date, to_date = current_period_start, current_period_end
-		else:
-			from_date, to_date = get_date_period(
-				current_period_start - timedelta(days=1),
-				frequency,
-				subscription.start_date,
-			)
-
-	if (
-		subscription.billing_time != "at beginning of period"
-		and subscription.start_date > from_date
+		from_date, to_date = get_date_period(
+			current_period_start - timedelta(days=1),
+			frequency,
+			subscription.start_date,
+		)
+	elif (
+		subscription.period_type != "start date"
+		and subscription.billing_time == "at beginning of period"
 	):
+		from_date, to_date = get_calendar_period(date.today(), frequency)
+	else:  # case of previous version
+		current_period_start, current_period_end = get_calendar_period(
+			date.today(), frequency
+		)
+		from_date, to_date = get_calendar_period(
+			current_period_start - timedelta(days=1), frequency
+		)
+
+	# check that start_date is not in the future
+	if subscription.start_date > from_date :
 		if not silent:
 			frappe.throw(
 				_(
 					f"Subscription starts after the first day of the current period({from_date})."
-				)
-			)
-		return
-	elif (
-		subscription.billing_time == "at beginning of period"
-		and subscription.start_date > to_date
-	):
-		if not silent:
-			frappe.throw(
-				_(
-					f"Subscription started after the last day of the current period({to_date})."
 				)
 			)
 		return
