@@ -9,6 +9,7 @@
   "company",
   "customer",
   "customer_name",
+  "currency",
   "column_break_3",
   "start_date",
   "period_type",
@@ -27,7 +28,8 @@
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Customer",
-   "options": "Customer"
+   "options": "Customer",
+   "reqd": 1
   },
   {
    "fieldname": "items",
@@ -90,13 +92,15 @@
    "description": "Invoices will be generated for periods starting on or after this date.",
    "fieldname": "start_date",
    "fieldtype": "Date",
-   "label": "Start Date"
+   "label": "Start Date",
+   "reqd": 1
   },
   {
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
-   "options": "Company"
+   "options": "Company",
+   "reqd": 1
   },
   {
    "default": "after end of period",
@@ -111,6 +115,15 @@
    "fieldtype": "Select",
    "label": "Billing Period is based on",
    "options": "calendar months\nstart date"
+  },
+  {
+   "fetch_from": "company.default_currency",
+   "fetch_if_empty": 1,
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
   }
  ],
  "is_submittable": 1,
@@ -120,7 +133,7 @@
    "link_fieldname": "simple_subscription"
   }
  ],
- "modified": "2024-08-20 20:19:15.055024",
+ "modified": "2024-09-12 12:54:00.717315",
  "modified_by": "Administrator",
  "module": "Simple Subscription",
  "name": "Simple Subscription",
