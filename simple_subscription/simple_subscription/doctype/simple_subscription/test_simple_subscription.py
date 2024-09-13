@@ -32,7 +32,7 @@ class TestSimpleSubscription(unittest.TestCase):
 		self.assertEqual(from_date, date(2022, 1, 1))
 		self.assertEqual(to_date, date(2022, 12, 31))
 
-def test_get_date_period(self):
+	def test_get_date_period(self):
 		eval_date = date(2022, 11, 7)
 		initial_date = date(2022, 6, 25)
 
