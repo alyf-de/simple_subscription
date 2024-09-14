@@ -116,7 +116,7 @@ scheduler_events = {
 # Testing
 # -------
 
-# before_tests = "simple_subscription.install.before_tests"
+before_tests = "simple_subscription.utils.before_tests"
 
 # Overriding Methods
 # ------------------------------

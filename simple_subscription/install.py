@@ -5,7 +5,7 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_field
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 from simple_subscription.simple_subscription.doctype.simple_subscription.simple_subscription import (
 	Frequency,
-	get_first_day_of_period
+	get_calendar_period
 )
 
 
@@ -52,7 +52,7 @@ def create_simple_subscription(
 ):
 	simple_subscription = frappe.new_doc("Simple Subscription")
 	simple_subscription.customer = customer
-	simple_subscription.start_date = get_first_day_of_period(date.today(), frequency)
+	simple_subscription.start_date, _ = get_calendar_period(date.today(), frequency)
 	simple_subscription.frequency = frequency.name
 	simple_subscription.extend("items", items)
 	simple_subscription.taxes_and_charges = taxes_and_charges
