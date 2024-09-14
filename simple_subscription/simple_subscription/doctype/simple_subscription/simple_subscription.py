@@ -19,6 +19,16 @@ class Frequency(Enum):
 	Yearly = 12
 
 
+class PeriodType(Enum):
+	CalendarMonths = "calendar months"
+	StartDate = "start date"
+
+
+class BillingTime(Enum):
+	AtBeginningOfPeriod = "at beginning of period"
+	AfterEndOfPeriod = "after end of period"
+
+
 class SimpleSubscription(Document):
 	def create_invoice(self, from_date: date, to_date: date) -> SalesInvoice:
 		msg = None
@@ -56,47 +66,20 @@ class SimpleSubscription(Document):
 @frappe.whitelist()
 def create_current_invoice(subscription_name: str, silent=False):
 	subscription = frappe.get_doc("Simple Subscription", subscription_name)
-	frequency = Frequency[subscription.frequency]
-
-	# determine current billing period based on period_type and billing_time
-	if (
-		subscription.period_type == "start date"
-		and subscription.billing_time == "at beginning of period"
-	):
-		from_date, to_date = get_date_period(
-			date.today(), frequency, subscription.start_date
-		)
-	elif (
-		subscription.period_type == "start date"
-		and subscription.billing_time != "at beginning of period"
-	):
-		current_period_start, current_period_end = get_date_period(
-			date.today(), frequency, subscription.start_date
-		)
-		from_date, to_date = get_date_period(
-			current_period_start - timedelta(days=1),
-			frequency,
-			subscription.start_date,
-		)
-	elif (
-		subscription.period_type != "start date"
-		and subscription.billing_time == "at beginning of period"
-	):
-		from_date, to_date = get_calendar_period(date.today(), frequency)
-	else:  # case of previous version
-		current_period_start, current_period_end = get_calendar_period(
-			date.today(), frequency
-		)
-		from_date, to_date = get_calendar_period(
-			current_period_start - timedelta(days=1), frequency
-		)
+	from_date, to_date = get_from_and_to_date(
+		frequency=Frequency[subscription.frequency],
+		eval_date=date.today(),
+		period_type=PeriodType(subscription.period_type),
+		billing_time=BillingTime(subscription.billing_time),
+		start_date=subscription.start_date,
+	)
 
 	# check that start_date is not in the future
-	if subscription.start_date > from_date :
+	if subscription.start_date and subscription.start_date > from_date:
 		if not silent:
 			frappe.throw(
 				_(
-					f"Subscription starts after the first day of the current period({from_date})."
+					f"Subscription starts after the first day of the current period ({from_date})."
 				)
 			)
 		return
@@ -146,6 +129,62 @@ def get_active_subscriptions():
 		},
 		pluck="name",
 	)
+
+
+def get_from_and_to_date(
+	frequency: Frequency,
+	eval_date: date,
+	period_type: PeriodType | None = None,
+	billing_time: BillingTime | None = None,
+	start_date: date | None = None,
+) -> Tuple[date, date]:
+	"""Return the first day and last day of the period.
+
+	:param frequency: Frequency of the subscription
+	:param eval_date: Date to evaluate the period for
+	:param period_type: Type of period to evaluate, defaults to CalendarMonths
+	:param billing_time: Time to bill the subscription, defaults to AfterEndOfPeriod
+	:param start_date: Start date of the subscription, required only for PeriodType.StartDate
+	"""
+	if period_type == PeriodType.StartDate and not start_date:
+		raise ValueError("start_date is required for period_type 'start date'")
+
+	if not period_type:
+		period_type = PeriodType.CalendarMonths
+
+	if not billing_time:
+		billing_time = BillingTime.AfterEndOfPeriod
+
+	if (
+		period_type == PeriodType.StartDate
+		and billing_time == BillingTime.AtBeginningOfPeriod
+	):
+		return get_date_period(eval_date, frequency, start_date)
+	elif (
+		period_type == PeriodType.StartDate
+		and billing_time == BillingTime.AfterEndOfPeriod
+	):
+		current_period_start, current_period_end = get_date_period(
+			eval_date, frequency, start_date
+		)
+		return get_date_period(
+			current_period_start - timedelta(days=1),
+			frequency,
+			start_date,
+		)
+	elif (
+		period_type == PeriodType.CalendarMonths
+		and billing_time == BillingTime.AtBeginningOfPeriod
+	):
+		return get_calendar_period(eval_date, frequency)
+	elif (
+		period_type == PeriodType.CalendarMonths
+		and billing_time == BillingTime.AfterEndOfPeriod
+	):
+		current_period_start, current_period_end = get_calendar_period(
+			eval_date, frequency
+		)
+		return get_calendar_period(current_period_start - timedelta(days=1), frequency)
 
 
 def get_calendar_period(eval_date: date, frequency: Frequency) -> Tuple[date, date]:
