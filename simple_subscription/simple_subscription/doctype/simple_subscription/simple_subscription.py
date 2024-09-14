@@ -139,7 +139,11 @@ def get_existing_sales_invoice(
 def get_active_subscriptions():
 	return frappe.get_all(
 		"Simple Subscription",
-		filters={"docstatus": 1, "disabled": ("!=", 1)},
+		filters={
+			"docstatus": 1,
+			"disabled": ("!=", 1),
+			"start_date": ("<=", date.today()),
+		},
 		pluck="name",
 	)
 
