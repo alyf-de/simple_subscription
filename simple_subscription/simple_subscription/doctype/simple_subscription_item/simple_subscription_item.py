@@ -12,6 +12,9 @@ class SimpleSubscriptionItem(Document):
 	@property
 	def current_rate(self):
 		parent = frappe.get_doc("Simple Subscription", self.parent)
+		currency = parent.currency or frappe.get_cached_value(
+			"Company", parent.company, "default_currency"
+		)
 
 		party_details = get_party_details(
 			party=parent.customer,
@@ -19,9 +22,13 @@ class SimpleSubscriptionItem(Document):
 			party_type="Customer",
 			company=parent.company,
 			posting_date=today(),
-			currency=parent.currency,
+			currency=currency,
 			doctype="Sales Invoice",
 			fetch_payment_terms_template=False,
+		)
+
+		price_list = party_details.selling_price_list or frappe.db.get_value(
+			"Price List", {"selling": 1, "currency": currency, "enabled": 1}
 		)
 
 		item_details = get_item_details(
@@ -29,14 +36,14 @@ class SimpleSubscriptionItem(Document):
 				"item_code": self.item,
 				"company": parent.company,
 				"doctype": "Sales Invoice",
-				"currency": parent.currency,
-				"price_list_currency": parent.currency,
+				"currency": currency,
+				"price_list_currency": currency,
 				"qty": self.qty,
 				"plc_conversion_rate": 1,
 				"conversion_rate": 1,
 				"customer": parent.customer,
 				"transaction_date": today(),
-				"price_list": party_details.selling_price_list,
+				"price_list": price_list,
 			}
 		)
 		return item_details.price_list_rate - (item_details.discount_amount or 0)
