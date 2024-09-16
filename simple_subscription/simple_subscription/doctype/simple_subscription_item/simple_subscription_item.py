@@ -43,8 +43,7 @@ class SimpleSubscriptionItem(Document):
 
 	@property
 	def current_description(self):
-		item = frappe.get_doc("Item", self.item)
-		return item.description
+		return frappe.db.get_value("Item", self.item, "description")
 
 	@property
 	def item_name(self):
