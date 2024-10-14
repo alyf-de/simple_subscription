@@ -27,9 +27,12 @@ class SimpleSubscriptionItem(Document):
 			fetch_payment_terms_template=False,
 		)
 
-		price_list = party_details.selling_price_list or frappe.db.get_single_value(
-			"Selling Settings", "selling_price_list") or frappe.db.get_value(
-			"Price List", {"selling": 1, "currency": currency, "enabled": 1}
+		price_list = (
+			party_details.selling_price_list
+			or frappe.db.get_single_value("Selling Settings", "selling_price_list")
+			or frappe.db.get_value(
+				"Price List", {"selling": 1, "currency": currency, "enabled": 1}
+			)
 		)
 
 		item_details = get_item_details(
