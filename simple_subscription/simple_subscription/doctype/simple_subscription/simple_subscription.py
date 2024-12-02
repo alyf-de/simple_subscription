@@ -102,7 +102,7 @@ def process_simple_subscriptions() -> None:
 		try:
 			create_current_invoice(subscription_name, silent=True)
 		except frappe.ValidationError:
-			frappe.log_error(frappe.get_traceback())
+			frappe.log_error(title=_("Failed to create subscription invoice"))
 			continue
 
 
