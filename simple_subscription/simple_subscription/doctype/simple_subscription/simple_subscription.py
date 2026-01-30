@@ -7,8 +7,10 @@ from typing import Union
 import frappe
 from dateutil.relativedelta import relativedelta
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
+from erpnext.accounts.party import get_party_details
 from frappe import _
 from frappe.model.document import Document
+from frappe.utils import today
 
 
 class Frequency(Enum):
@@ -46,6 +48,7 @@ class SimpleSubscription(Document):
 		invoice = frappe.new_doc("Sales Invoice")
 		invoice.company = self.company
 		invoice.customer = self.customer
+		invoice.selling_price_list = self.get_price_list()
 		for row in self.items:
 			invoice.append(
 				"items",
@@ -60,6 +63,28 @@ class SimpleSubscription(Document):
 		invoice.simple_subscription = self.name
 		invoice.set_missing_values()
 		return invoice.insert()
+
+	def get_price_list(self) -> str | None:
+		currency = self.currency or frappe.get_cached_value("Company", self.company, "default_currency")
+
+		party_details = get_party_details(
+			party=self.customer,
+			account=None,
+			party_type="Customer",
+			company=self.company,
+			posting_date=today(),
+			currency=currency,
+			doctype="Sales Invoice",
+			fetch_payment_terms_template=False,
+		)
+
+		price_list = (
+			party_details.selling_price_list
+			or frappe.db.get_single_value("Selling Settings", "selling_price_list")
+			or frappe.db.get_value("Price List", {"selling": 1, "currency": currency, "enabled": 1})
+		)
+
+		return price_list or None
 
 
 @frappe.whitelist()
