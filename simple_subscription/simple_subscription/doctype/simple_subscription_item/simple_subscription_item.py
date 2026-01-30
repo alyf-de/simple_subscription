@@ -4,7 +4,6 @@
 import frappe
 from frappe.model.document import Document
 from erpnext.stock.get_item_details import get_item_details
-from erpnext.accounts.party import get_party_details
 from frappe.utils import today
 
 
@@ -16,24 +15,7 @@ class SimpleSubscriptionItem(Document):
 			"Company", parent.company, "default_currency"
 		)
 
-		party_details = get_party_details(
-			party=parent.customer,
-			account=None,
-			party_type="Customer",
-			company=parent.company,
-			posting_date=today(),
-			currency=currency,
-			doctype="Sales Invoice",
-			fetch_payment_terms_template=False,
-		)
-
-		price_list = (
-			party_details.selling_price_list
-			or frappe.db.get_single_value("Selling Settings", "selling_price_list")
-			or frappe.db.get_value(
-				"Price List", {"selling": 1, "currency": currency, "enabled": 1}
-			)
-		)
+		price_list = parent.get_price_list()
 
 		item_details = get_item_details(
 			{
