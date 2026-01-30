@@ -1,10 +1,11 @@
 from datetime import date
-from dateutil.relativedelta import relativedelta
 
 import frappe
+from dateutil.relativedelta import relativedelta
+
 from simple_subscription.simple_subscription.doctype.simple_subscription.simple_subscription import (
-	get_first_day_of_period,
 	Frequency,
+	get_calendar_period,
 )
 
 
@@ -18,9 +19,10 @@ def execute():
 		as_list=True,
 	):
 		frequency = Frequency[frequency]
+		start_date, _ = get_calendar_period(date.today() - relativedelta(months=1), frequency)
 		frappe.db.set_value(
 			"Simple Subscription",
 			subscription_name,
 			"start_date",
-			get_first_day_of_period(date.today() - relativedelta(months=1), frequency),
+			start_date,
 		)

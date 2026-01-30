@@ -6,12 +6,12 @@ import unittest
 from datetime import date
 
 from .simple_subscription import (
+	BillingTime,
+	Frequency,
+	PeriodType,
 	get_calendar_period,
 	get_date_period,
 	get_from_and_to_date,
-	Frequency,
-	PeriodType,
-	BillingTime,
 )
 
 

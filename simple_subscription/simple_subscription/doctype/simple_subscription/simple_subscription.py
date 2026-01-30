@@ -1,15 +1,14 @@
 # Copyright (c) 2022, ALYF GmbH and contributors
 # For license information, please see license.txt
 from datetime import date, timedelta
-from dateutil.relativedelta import relativedelta
-from typing import Union, Tuple
 from enum import Enum
+from typing import Union
 
 import frappe
+from dateutil.relativedelta import relativedelta
+from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
 from frappe import _
 from frappe.model.document import Document
-
-from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
 
 
 class Frequency(Enum):
@@ -77,21 +76,13 @@ def create_current_invoice(subscription_name: str, silent=False):
 	# check that start_date is not in the future
 	if subscription.start_date and subscription.start_date > from_date:
 		if not silent:
-			frappe.throw(
-				_(
-					f"Subscription starts after the first day of the current period ({from_date})."
-				)
-			)
+			frappe.throw(_(f"Subscription starts after the first day of the current period ({from_date})."))
 		return
 
 	existing_si = get_existing_sales_invoice(subscription_name, from_date, to_date)
 	if existing_si:
 		if not silent:
-			frappe.throw(
-				_("Sales Invoice already exists for this period: {}").format(
-					existing_si
-				)
-			)
+			frappe.throw(_("Sales Invoice already exists for this period: {}").format(existing_si))
 		return
 
 	subscription.create_invoice(from_date, to_date)
@@ -106,9 +97,7 @@ def process_simple_subscriptions() -> None:
 			continue
 
 
-def get_existing_sales_invoice(
-	subscription_name: str, from_date: date, to_date: date
-) -> Union[str, None]:
+def get_existing_sales_invoice(subscription_name: str, from_date: date, to_date: date) -> str | None:
 	return frappe.db.exists(
 		{
 			"doctype": "Sales Invoice",
@@ -137,7 +126,7 @@ def get_from_and_to_date(
 	period_type: PeriodType | None = None,
 	billing_time: BillingTime | None = None,
 	start_date: date | None = None,
-) -> Tuple[date, date]:
+) -> tuple[date, date]:
 	"""Return the first day and last day of the period.
 
 	:param frequency: Frequency of the subscription
@@ -155,39 +144,23 @@ def get_from_and_to_date(
 	if not billing_time:
 		billing_time = BillingTime.AfterEndOfPeriod
 
-	if (
-		period_type == PeriodType.StartDate
-		and billing_time == BillingTime.AtBeginningOfPeriod
-	):
+	if period_type == PeriodType.StartDate and billing_time == BillingTime.AtBeginningOfPeriod:
 		return get_date_period(eval_date, frequency, start_date)
-	elif (
-		period_type == PeriodType.StartDate
-		and billing_time == BillingTime.AfterEndOfPeriod
-	):
-		current_period_start, current_period_end = get_date_period(
-			eval_date, frequency, start_date
-		)
+	elif period_type == PeriodType.StartDate and billing_time == BillingTime.AfterEndOfPeriod:
+		current_period_start, _ = get_date_period(eval_date, frequency, start_date)
 		return get_date_period(
 			current_period_start - timedelta(days=1),
 			frequency,
 			start_date,
 		)
-	elif (
-		period_type == PeriodType.CalendarMonths
-		and billing_time == BillingTime.AtBeginningOfPeriod
-	):
+	elif period_type == PeriodType.CalendarMonths and billing_time == BillingTime.AtBeginningOfPeriod:
 		return get_calendar_period(eval_date, frequency)
-	elif (
-		period_type == PeriodType.CalendarMonths
-		and billing_time == BillingTime.AfterEndOfPeriod
-	):
-		current_period_start, current_period_end = get_calendar_period(
-			eval_date, frequency
-		)
+	elif period_type == PeriodType.CalendarMonths and billing_time == BillingTime.AfterEndOfPeriod:
+		current_period_start, _ = get_calendar_period(eval_date, frequency)
 		return get_calendar_period(current_period_start - timedelta(days=1), frequency)
 
 
-def get_calendar_period(eval_date: date, frequency: Frequency) -> Tuple[date, date]:
+def get_calendar_period(eval_date: date, frequency: Frequency) -> tuple[date, date]:
 	"""Return the first day and last day of the period containing `from_date`."""
 	invoice_month_map = {
 		Frequency.Monthly: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
@@ -202,21 +175,13 @@ def get_calendar_period(eval_date: date, frequency: Frequency) -> Tuple[date, da
 		Frequency.Yearly: 12,
 	}
 
-	from_date = eval_date.replace(
-		day=1, month=invoice_month_map[frequency][eval_date.month - 1]
-	)
-	to_date = (
-		from_date
-		+ relativedelta(months=no_of_month_map[frequency])
-		- relativedelta(days=1)
-	)
+	from_date = eval_date.replace(day=1, month=invoice_month_map[frequency][eval_date.month - 1])
+	to_date = from_date + relativedelta(months=no_of_month_map[frequency]) - relativedelta(days=1)
 
 	return from_date, to_date
 
 
-def get_date_period(
-	eval_date: date, frequency: Frequency, initial_date: date
-) -> Tuple[date, date]:
+def get_date_period(eval_date: date, frequency: Frequency, initial_date: date) -> tuple[date, date]:
 	no_of_month_map = {
 		Frequency.Monthly: 1,
 		Frequency.Quarterly: 3,
@@ -228,21 +193,11 @@ def get_date_period(
 
 	# determine no of period eval_date lies in when starting on initial_date
 	if eval_date >= initial_date:
-		month_detla_floor = (delta.years * 12 + delta.months) // no_of_month_map[
-			frequency
-		]
+		month_detla_floor = (delta.years * 12 + delta.months) // no_of_month_map[frequency]
 	else:
-		month_detla_floor = (delta.years * 12 + delta.months - 1) // no_of_month_map[
-			frequency
-		]
+		month_detla_floor = (delta.years * 12 + delta.months - 1) // no_of_month_map[frequency]
 
-	from_date = initial_date + relativedelta(
-		months=(no_of_month_map[frequency] * month_detla_floor)
-	)
-	to_date = (
-		from_date
-		+ relativedelta(months=no_of_month_map[frequency])
-		- relativedelta(days=1)
-	)
+	from_date = initial_date + relativedelta(months=(no_of_month_map[frequency] * month_detla_floor))
+	to_date = from_date + relativedelta(months=no_of_month_map[frequency]) - relativedelta(days=1)
 
 	return from_date, to_date

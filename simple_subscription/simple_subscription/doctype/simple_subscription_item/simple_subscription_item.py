@@ -2,9 +2,9 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.model.document import Document
-from erpnext.stock.get_item_details import get_item_details
 from erpnext.accounts.party import get_party_details
+from erpnext.stock.get_item_details import get_item_details
+from frappe.model.document import Document
 from frappe.utils import today
 
 
@@ -12,9 +12,7 @@ class SimpleSubscriptionItem(Document):
 	@property
 	def current_rate(self):
 		parent = frappe.get_doc("Simple Subscription", self.parent)
-		currency = parent.currency or frappe.get_cached_value(
-			"Company", parent.company, "default_currency"
-		)
+		currency = parent.currency or frappe.get_cached_value("Company", parent.company, "default_currency")
 
 		party_details = get_party_details(
 			party=parent.customer,
@@ -30,9 +28,7 @@ class SimpleSubscriptionItem(Document):
 		price_list = (
 			party_details.selling_price_list
 			or frappe.db.get_single_value("Selling Settings", "selling_price_list")
-			or frappe.db.get_value(
-				"Price List", {"selling": 1, "currency": currency, "enabled": 1}
-			)
+			or frappe.db.get_value("Price List", {"selling": 1, "currency": currency, "enabled": 1})
 		)
 
 		item_details = get_item_details(
