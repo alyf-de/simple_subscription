@@ -33,6 +33,17 @@ repos:
       - id: prettier
         types_or: [javascript, vue, scss]
 
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.39.1
+    hooks:
+      - id: eslint
+        types_or: [javascript]
+        args: ["--quiet", "--config", "eslint.config.mjs"]
+        additional_dependencies:
+          - "eslint@9.17.0"
+          - "@eslint/js@9.17.0"
+          - "globals@15.14.0"
+
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v9.24.0
     hooks:

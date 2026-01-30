@@ -27,7 +27,6 @@ sed -i 's/schedule:/# schedule:/g' Procfile
 sed -i 's/socketio:/# socketio:/g' Procfile
 sed -i 's/redis_socketio:/# redis_socketio:/g' Procfile
 
-bench get-app payments --branch version-16
 bench get-app erpnext --branch version-16
 bench get-app simple_subscription "${GITHUB_WORKSPACE}"
 
