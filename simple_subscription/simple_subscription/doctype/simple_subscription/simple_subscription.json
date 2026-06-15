@@ -68,7 +68,7 @@
    "fieldname": "frequency",
    "fieldtype": "Select",
    "label": "Frequency",
-   "options": "Monthly\nQuarterly\nHalfyearly\nYearly"
+   "options": "Monthly\nQuarterly\nHalfyearly\nYearly\nBiennial\nTriennial"
   },
   {
    "fieldname": "section_break_5",

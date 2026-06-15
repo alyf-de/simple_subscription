@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Simple Subscription VERSION\n"
 "Report-Msgid-Bugs-To: hallo@alyf.de\n"
-"POT-Creation-Date: 2024-12-02 17:26+0053\n"
+"POT-Creation-Date: 2026-06-15 11:45+0053\n"
 "PO-Revision-Date: 2024-12-02 17:26+0053\n"
 "Last-Translator: hallo@alyf.de\n"
 "Language: de\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.13.1\n"
+"Generated-By: Babel 2.16.0\n"
 
 #. Name of a role
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
@@ -28,68 +28,79 @@ msgstr ""
 msgid "Accounts User"
 msgstr ""
 
-#. Label of a Link field in DocType 'Simple Subscription'
+#. Label of the amended_from (Link) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Amended From"
 msgstr ""
 
-#. Label of a Select field in DocType 'Simple Subscription'
+#. Option for the 'Frequency' (Select) field in DocType 'Simple Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Biennial"
+msgstr "Zweijährlich"
+
+#. Label of the period_type (Select) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Billing Period is based on"
 msgstr "Rechnungsperiode basiert auf"
 
-#. Label of a Select field in DocType 'Simple Subscription'
+#. Label of the billing_time (Select) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Billing Time"
 msgstr "Rechnungszeit"
 
-#. Label of a Link field in DocType 'Simple Subscription'
+#. Label of the company (Link) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Company"
 msgstr "Unternehmen"
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.js:32
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.js:53
 msgid "Create current {0} invoice"
 msgstr "Aktuelle {0} Rechnung erstellen"
 
-#. Label of a Link field in DocType 'Simple Subscription'
+#. Label of the currency (Link) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Currency"
 msgstr ""
 
-#. Label of a Text Editor field in DocType 'Simple Subscription Item'
+#. Label of the current_description (Text Editor) field in DocType 'Simple
+#. Subscription Item'
 #: simple_subscription/simple_subscription/doctype/simple_subscription_item/simple_subscription_item.json
 msgid "Current Description"
 msgstr "Aktuelle Beschreibung"
 
-#. Label of a Currency field in DocType 'Simple Subscription Item'
+#. Label of the current_rate (Currency) field in DocType 'Simple Subscription
+#. Item'
 #: simple_subscription/simple_subscription/doctype/simple_subscription_item/simple_subscription_item.json
 msgid "Current Rate"
 msgstr "Aktueller Einzelpreis"
 
-#. Label of a Link field in DocType 'Simple Subscription'
+#. Label of the customer (Link) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Customer"
 msgstr ""
 
-#. Label of a Data field in DocType 'Simple Subscription'
+#. Label of the customer_name (Data) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Customer Name"
 msgstr ""
 
-#. Label of a Check field in DocType 'Simple Subscription'
+#. Label of the disabled (Check) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Disabled"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:105
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:128
 msgid "Failed to create subscription invoice"
 msgstr "Fehler beim Erstellen der Abo-Rechnung"
 
-#. Label of a Select field in DocType 'Simple Subscription'
+#. Label of the frequency (Select) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Frequency"
 msgstr "Frequenz"
+
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:196
+msgid "Frequency {0} is only supported when billing period is based on start date."
+msgstr "Die Frequenz {0} ist nur verfügbar, wenn die Abrechnungsperiode auf dem Startdatum basiert."
 
 #. Option for the 'Frequency' (Select) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
@@ -102,17 +113,17 @@ msgstr "Halbjährlich"
 msgid "Invoices will be generated for periods starting on or after this date."
 msgstr "Rechnungen werden für Perioden erstellt, die an oder nach diesem Datum beginnen."
 
-#. Label of a Link field in DocType 'Simple Subscription Item'
+#. Label of the item (Link) field in DocType 'Simple Subscription Item'
 #: simple_subscription/simple_subscription/doctype/simple_subscription_item/simple_subscription_item.json
 msgid "Item"
 msgstr ""
 
-#. Label of a Data field in DocType 'Simple Subscription Item'
+#. Label of the item_name (Data) field in DocType 'Simple Subscription Item'
 #: simple_subscription/simple_subscription/doctype/simple_subscription_item/simple_subscription_item.json
 msgid "Item Name"
 msgstr ""
 
-#. Label of a Table field in DocType 'Simple Subscription'
+#. Label of the items (Table) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Items"
 msgstr ""
@@ -122,19 +133,19 @@ msgstr ""
 msgid "Monthly"
 msgstr "Monatlich"
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:42
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:50
 msgid "Please amend Subscription {0} before creating a Sales Invoice."
 msgstr "Bitte ändern Sie das Abo {0} bevor Sie eine Rechnung erstellen."
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:36
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:44
 msgid "Please enable Subscription {0} before creating a Sales Invoice."
 msgstr "Bitte aktivieren Sie das Abo {0} bevor Sie eine Rechnung erstellen."
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:39
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:47
 msgid "Please submit Subscription {0} before creating a Sales Invoice."
 msgstr "Bitte buchen Sie das Abo {0} bevor Sie eine Rechnung erstellen."
 
-#. Label of a Float field in DocType 'Simple Subscription Item'
+#. Label of the qty (Float) field in DocType 'Simple Subscription Item'
 #: simple_subscription/simple_subscription/doctype/simple_subscription_item/simple_subscription_item.json
 msgid "Qty"
 msgstr ""
@@ -144,12 +155,7 @@ msgstr ""
 msgid "Quarterly"
 msgstr "Vierteljährlich"
 
-#. Linked DocType in Simple Subscription's connections
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
-msgid "Sales Invoice"
-msgstr ""
-
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:91
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:117
 msgid "Sales Invoice already exists for this period: {}"
 msgstr "Rechnung für diese Periode existiert bereits: {}"
 
@@ -161,7 +167,7 @@ msgstr ""
 #. Name of a DocType
 #. Label of a Link in the Simple Subscription Selling Workspace
 #. Label of a shortcut in the Simple Subscription Selling Workspace
-#: simple_subscription/config/desktop.py:10
+#: simple_subscription/config/desktop.py:11
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 #: simple_subscription/simple_subscription/workspace/simple_subscription_selling/simple_subscription_selling.json
 msgid "Simple Subscription"
@@ -177,7 +183,7 @@ msgstr "Einfacher Abo-Artikel"
 msgid "Simple Subscription Selling"
 msgstr "Vertrieb"
 
-#. Label of a Date field in DocType 'Simple Subscription'
+#. Label of the start_date (Date) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Start Date"
 msgstr ""
@@ -187,10 +193,15 @@ msgstr ""
 msgid "System Manager"
 msgstr ""
 
-#. Label of a Link field in DocType 'Simple Subscription'
+#. Label of the taxes_and_charges (Link) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Taxes and Charges"
 msgstr ""
+
+#. Option for the 'Frequency' (Select) field in DocType 'Simple Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Triennial"
+msgstr "Dreijährlich"
 
 #. Option for the 'Frequency' (Select) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
@@ -220,3 +231,4 @@ msgstr "Kalendermonate"
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "start date"
 msgstr "Startdatum"
+

@@ -2,7 +2,6 @@
 # For license information, please see license.txt
 from datetime import date, timedelta
 from enum import Enum
-from typing import Union
 
 import frappe
 from dateutil.relativedelta import relativedelta
@@ -18,6 +17,11 @@ class Frequency(Enum):
 	Quarterly = 3
 	Halfyearly = 6
 	Yearly = 12
+	Biennial = 24
+	Triennial = 36
+
+
+START_DATE_ONLY_FREQUENCIES = frozenset({Frequency.Biennial, Frequency.Triennial})
 
 
 class PeriodType(Enum):
@@ -31,6 +35,9 @@ class BillingTime(Enum):
 
 
 class SimpleSubscription(Document):
+	def validate(self):
+		validate_start_date_only_frequencies(self.period_type, self.frequency)
+
 	def create_invoice(self, from_date: date, to_date: date) -> SalesInvoice:
 		msg = None
 		if self.disabled:
@@ -185,8 +192,25 @@ def get_from_and_to_date(
 		return get_calendar_period(current_period_start - timedelta(days=1), frequency)
 
 
+def get_start_date_only_frequency_error_message(frequency: str) -> str:
+	return _(
+		"Frequency {0} is only supported when billing period is based on start date."
+	).format(_(frequency, context="Frequency of Subscription"))
+
+
+def validate_start_date_only_frequencies(period_type: str, frequency: str) -> None:
+	if period_type != PeriodType.CalendarMonths.value or not frequency:
+		return
+
+	if Frequency[frequency] in START_DATE_ONLY_FREQUENCIES:
+		frappe.throw(get_start_date_only_frequency_error_message(frequency))
+
+
 def get_calendar_period(eval_date: date, frequency: Frequency) -> tuple[date, date]:
 	"""Return the first day and last day of the period containing `from_date`."""
+	if frequency in START_DATE_ONLY_FREQUENCIES:
+		frappe.throw(get_start_date_only_frequency_error_message(frequency.name))
+
 	invoice_month_map = {
 		Frequency.Monthly: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
 		Frequency.Quarterly: [1, 1, 1, 4, 4, 4, 7, 7, 7, 10, 10, 10],
@@ -207,22 +231,17 @@ def get_calendar_period(eval_date: date, frequency: Frequency) -> tuple[date, da
 
 
 def get_date_period(eval_date: date, frequency: Frequency, initial_date: date) -> tuple[date, date]:
-	no_of_month_map = {
-		Frequency.Monthly: 1,
-		Frequency.Quarterly: 3,
-		Frequency.Halfyearly: 6,
-		Frequency.Yearly: 12,
-	}
+	months = frequency.value
 
 	delta = relativedelta(eval_date, initial_date)
 
 	# determine no of period eval_date lies in when starting on initial_date
 	if eval_date >= initial_date:
-		month_detla_floor = (delta.years * 12 + delta.months) // no_of_month_map[frequency]
+		month_detla_floor = (delta.years * 12 + delta.months) // months
 	else:
-		month_detla_floor = (delta.years * 12 + delta.months - 1) // no_of_month_map[frequency]
+		month_detla_floor = (delta.years * 12 + delta.months - 1) // months
 
-	from_date = initial_date + relativedelta(months=(no_of_month_map[frequency] * month_detla_floor))
-	to_date = from_date + relativedelta(months=no_of_month_map[frequency]) - relativedelta(days=1)
+	from_date = initial_date + relativedelta(months=(months * month_detla_floor))
+	to_date = from_date + relativedelta(months=months) - relativedelta(days=1)
 
 	return from_date, to_date
