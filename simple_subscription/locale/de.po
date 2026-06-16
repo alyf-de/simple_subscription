@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Simple Subscription VERSION\n"
 "Report-Msgid-Bugs-To: hallo@alyf.de\n"
-"POT-Creation-Date: 2026-06-15 11:45+0053\n"
+"POT-Creation-Date: 2026-06-16 11:37+0053\n"
 "PO-Revision-Date: 2024-12-02 17:26+0053\n"
 "Last-Translator: hallo@alyf.de\n"
 "Language: de\n"
@@ -53,7 +53,7 @@ msgstr "Rechnungszeit"
 msgid "Company"
 msgstr "Unternehmen"
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.js:53
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.js:28
 msgid "Create current {0} invoice"
 msgstr "Aktuelle {0} Rechnung erstellen"
 
@@ -89,7 +89,7 @@ msgstr ""
 msgid "Disabled"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:128
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:135
 msgid "Failed to create subscription invoice"
 msgstr "Fehler beim Erstellen der Abo-Rechnung"
 
@@ -97,10 +97,6 @@ msgstr "Fehler beim Erstellen der Abo-Rechnung"
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Frequency"
 msgstr "Frequenz"
-
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:196
-msgid "Frequency {0} is only supported when billing period is based on start date."
-msgstr "Die Frequenz {0} ist nur verfügbar, wenn die Abrechnungsperiode auf dem Startdatum basiert."
 
 #. Option for the 'Frequency' (Select) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
@@ -133,15 +129,15 @@ msgstr ""
 msgid "Monthly"
 msgstr "Monatlich"
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:50
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:57
 msgid "Please amend Subscription {0} before creating a Sales Invoice."
 msgstr "Bitte ändern Sie das Abo {0} bevor Sie eine Rechnung erstellen."
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:44
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:51
 msgid "Please enable Subscription {0} before creating a Sales Invoice."
 msgstr "Bitte aktivieren Sie das Abo {0} bevor Sie eine Rechnung erstellen."
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:47
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:54
 msgid "Please submit Subscription {0} before creating a Sales Invoice."
 msgstr "Bitte buchen Sie das Abo {0} bevor Sie eine Rechnung erstellen."
 
@@ -155,7 +151,7 @@ msgstr ""
 msgid "Quarterly"
 msgstr "Vierteljährlich"
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:117
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:124
 msgid "Sales Invoice already exists for this period: {}"
 msgstr "Rechnung für diese Periode existiert bereits: {}"
 
@@ -186,7 +182,12 @@ msgstr "Vertrieb"
 #. Label of the start_date (Date) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Start Date"
-msgstr ""
+msgstr "Startdatum"
+
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:209
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:221
+msgid "Start Date is required for frequency {0}."
+msgstr "Startdatum ist für die Frequenz {0} erforderlich."
 
 #. Name of a role
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json

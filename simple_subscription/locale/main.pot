@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Simple Subscription VERSION\n"
 "Report-Msgid-Bugs-To: hallo@alyf.de\n"
-"POT-Creation-Date: 2026-06-15 11:45+0053\n"
-"PO-Revision-Date: 2026-06-15 11:45+0053\n"
+"POT-Creation-Date: 2026-06-16 11:37+0053\n"
+"PO-Revision-Date: 2026-06-16 11:37+0053\n"
 "Last-Translator: hallo@alyf.de\n"
 "Language-Team: hallo@alyf.de\n"
 "MIME-Version: 1.0\n"
@@ -51,7 +51,7 @@ msgstr ""
 msgid "Company"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.js:53
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.js:28
 msgid "Create current {0} invoice"
 msgstr ""
 
@@ -87,17 +87,13 @@ msgstr ""
 msgid "Disabled"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:128
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:135
 msgid "Failed to create subscription invoice"
 msgstr ""
 
 #. Label of the frequency (Select) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Frequency"
-msgstr ""
-
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:196
-msgid "Frequency {0} is only supported when billing period is based on start date."
 msgstr ""
 
 #. Option for the 'Frequency' (Select) field in DocType 'Simple Subscription'
@@ -131,15 +127,15 @@ msgstr ""
 msgid "Monthly"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:50
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:57
 msgid "Please amend Subscription {0} before creating a Sales Invoice."
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:44
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:51
 msgid "Please enable Subscription {0} before creating a Sales Invoice."
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:47
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:54
 msgid "Please submit Subscription {0} before creating a Sales Invoice."
 msgstr ""
 
@@ -153,7 +149,7 @@ msgstr ""
 msgid "Quarterly"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:117
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:124
 msgid "Sales Invoice already exists for this period: {}"
 msgstr ""
 
@@ -184,6 +180,11 @@ msgstr ""
 #. Label of the start_date (Date) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Start Date"
+msgstr ""
+
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:209
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:221
+msgid "Start Date is required for frequency {0}."
 msgstr ""
 
 #. Name of a role
