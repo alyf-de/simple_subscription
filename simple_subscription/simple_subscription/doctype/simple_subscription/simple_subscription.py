@@ -21,7 +21,14 @@ class Frequency(Enum):
 	Triennial = 36
 
 
-START_DATE_ONLY_FREQUENCIES = frozenset({Frequency.Biennial, Frequency.Triennial})
+MULTI_YEAR_FREQUENCIES = frozenset({Frequency.Biennial, Frequency.Triennial})
+
+INVOICE_MONTH_MAP: dict[Frequency, list[int]] = {
+	Frequency.Monthly: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+	Frequency.Quarterly: [1, 1, 1, 4, 4, 4, 7, 7, 7, 10, 10, 10],
+	Frequency.Halfyearly: [1, 1, 1, 1, 1, 1, 7, 7, 7, 7, 7, 7],
+	Frequency.Yearly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+}
 
 
 class PeriodType(Enum):
@@ -36,7 +43,7 @@ class BillingTime(Enum):
 
 class SimpleSubscription(Document):
 	def validate(self):
-		validate_start_date_only_frequencies(self.period_type, self.frequency)
+		validate_calendar_frequencies(self.period_type, self.frequency, self.start_date)
 
 	def create_invoice(self, from_date: date, to_date: date) -> SalesInvoice:
 		msg = None
@@ -165,7 +172,8 @@ def get_from_and_to_date(
 	:param eval_date: Date to evaluate the period for
 	:param period_type: Type of period to evaluate, defaults to CalendarMonths
 	:param billing_time: Time to bill the subscription, defaults to AfterEndOfPeriod
-	:param start_date: Start date of the subscription, required only for PeriodType.StartDate
+	:param start_date: Start date of the subscription, required for PeriodType.StartDate
+		and for multi-year frequencies with calendar months
 	"""
 	if period_type == PeriodType.StartDate and not start_date:
 		raise ValueError("start_date is required for period_type 'start date'")
@@ -186,47 +194,43 @@ def get_from_and_to_date(
 			start_date,
 		)
 	elif period_type == PeriodType.CalendarMonths and billing_time == BillingTime.AtBeginningOfPeriod:
-		return get_calendar_period(eval_date, frequency)
+		return get_calendar_period(eval_date, frequency, start_date)
 	elif period_type == PeriodType.CalendarMonths and billing_time == BillingTime.AfterEndOfPeriod:
-		current_period_start, _ = get_calendar_period(eval_date, frequency)
-		return get_calendar_period(current_period_start - timedelta(days=1), frequency)
+		current_period_start, _ = get_calendar_period(eval_date, frequency, start_date)
+		return get_calendar_period(current_period_start - timedelta(days=1), frequency, start_date)
 
 
-def get_start_date_only_frequency_error_message(frequency: str) -> str:
-	return _(
-		"Frequency {0} is only supported when billing period is based on start date."
-	).format(_(frequency, context="Frequency of Subscription"))
-
-
-def validate_start_date_only_frequencies(period_type: str, frequency: str) -> None:
+def validate_calendar_frequencies(period_type: str, frequency: str, start_date: date | None) -> None:
 	if period_type != PeriodType.CalendarMonths.value or not frequency:
 		return
 
-	if Frequency[frequency] in START_DATE_ONLY_FREQUENCIES:
-		frappe.throw(get_start_date_only_frequency_error_message(frequency))
+	if Frequency[frequency] in MULTI_YEAR_FREQUENCIES and not start_date:
+		frappe.throw(
+			_("Start Date is required for frequency {0}.").format(
+				_(frequency, context="Frequency of Subscription")
+			)
+		)
 
 
-def get_calendar_period(eval_date: date, frequency: Frequency) -> tuple[date, date]:
-	"""Return the first day and last day of the period containing `from_date`."""
-	if frequency in START_DATE_ONLY_FREQUENCIES:
-		frappe.throw(get_start_date_only_frequency_error_message(frequency.name))
+def get_calendar_period(
+	eval_date: date, frequency: Frequency, start_date: date | None = None
+) -> tuple[date, date]:
+	"""Return the first and last day of the calendar period containing `eval_date`."""
+	if frequency in MULTI_YEAR_FREQUENCIES and not start_date:
+		frappe.throw(
+			_("Start Date is required for frequency {0}.").format(
+				_(frequency.name, context="Frequency of Subscription")
+			)
+		)
 
-	invoice_month_map = {
-		Frequency.Monthly: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-		Frequency.Quarterly: [1, 1, 1, 4, 4, 4, 7, 7, 7, 10, 10, 10],
-		Frequency.Halfyearly: [1, 1, 1, 1, 1, 1, 7, 7, 7, 7, 7, 7],
-		Frequency.Yearly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-	}
-	no_of_month_map = {
-		Frequency.Monthly: 1,
-		Frequency.Quarterly: 3,
-		Frequency.Halfyearly: 6,
-		Frequency.Yearly: 12,
-	}
+	if frequency in MULTI_YEAR_FREQUENCIES:
+		years_span = frequency.value // 12
+		block_start_year = start_date.year + ((eval_date.year - start_date.year) // years_span) * years_span
+		from_date = date(block_start_year, 1, 1)
+	else:
+		from_date = eval_date.replace(day=1, month=INVOICE_MONTH_MAP[frequency][eval_date.month - 1])
 
-	from_date = eval_date.replace(day=1, month=invoice_month_map[frequency][eval_date.month - 1])
-	to_date = from_date + relativedelta(months=no_of_month_map[frequency]) - relativedelta(days=1)
-
+	to_date = from_date + relativedelta(months=frequency.value) - relativedelta(days=1)
 	return from_date, to_date
 
 

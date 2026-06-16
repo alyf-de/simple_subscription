@@ -9,7 +9,7 @@ Easy setup: existing **Subscriptions** get copied from ERPNext (you have to canc
 3. Set a _Start Date_
 4. Select if billing is based on _calendar months_ or _Start Date_
 5. Select if billing is supposed to happen _at the beginning of period_ or _after end of period_
-6. Select a _Frequency_ (_Biennial_ and _Triennial_ require billing based on _Start Date_)
+6. Select a _Frequency_
 7. Add items to the table
 8. Select a _Sales Taxes and Charges Template_
 9. Click "Save"
