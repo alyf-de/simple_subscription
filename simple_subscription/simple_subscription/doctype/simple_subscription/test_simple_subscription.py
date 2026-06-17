@@ -37,33 +37,33 @@ class TestSimpleSubscription(unittest.TestCase):
 		self.assertEqual(from_date, date(2022, 1, 1))
 		self.assertEqual(to_date, date(2022, 12, 31))
 
-		start_date = date(2022, 6, 25)
+		start_year = date(2022, 6, 25).year
 
-		from_date, to_date = get_calendar_period(date(2022, 11, 7), Frequency.Biennial, start_date)
+		from_date, to_date = get_calendar_period(date(2022, 11, 7), Frequency.Biennial, start_year)
 		self.assertEqual(from_date, date(2022, 1, 1))
 		self.assertEqual(to_date, date(2023, 12, 31))
 
-		from_date, to_date = get_calendar_period(date(2023, 6, 15), Frequency.Biennial, start_date)
+		from_date, to_date = get_calendar_period(date(2023, 6, 15), Frequency.Biennial, start_year)
 		self.assertEqual(from_date, date(2022, 1, 1))
 		self.assertEqual(to_date, date(2023, 12, 31))
 
-		from_date, to_date = get_calendar_period(date(2024, 3, 1), Frequency.Biennial, start_date)
+		from_date, to_date = get_calendar_period(date(2024, 3, 1), Frequency.Biennial, start_year)
 		self.assertEqual(from_date, date(2024, 1, 1))
 		self.assertEqual(to_date, date(2025, 12, 31))
 
-		from_date, to_date = get_calendar_period(date(2024, 6, 15), Frequency.Triennial, start_date)
+		from_date, to_date = get_calendar_period(date(2024, 6, 15), Frequency.Triennial, start_year)
 		self.assertEqual(from_date, date(2022, 1, 1))
 		self.assertEqual(to_date, date(2024, 12, 31))
 
-		from_date, to_date = get_calendar_period(date(2025, 1, 1), Frequency.Triennial, start_date)
+		from_date, to_date = get_calendar_period(date(2025, 1, 1), Frequency.Triennial, start_year)
 		self.assertEqual(from_date, date(2025, 1, 1))
 		self.assertEqual(to_date, date(2027, 12, 31))
 
-	def test_get_calendar_period_multi_year_requires_start_date(self):
-		with self.assertRaises(frappe.ValidationError):
+	def test_get_calendar_period_multi_year_requires_start_year(self):
+		with self.assertRaises(ValueError):
 			get_calendar_period(date(2022, 11, 7), Frequency.Biennial)
 
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaises(ValueError):
 			get_calendar_period(date(2022, 11, 7), Frequency.Triennial)
 
 	def test_validate_calendar_frequencies(self):

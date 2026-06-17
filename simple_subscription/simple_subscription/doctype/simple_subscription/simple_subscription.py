@@ -104,13 +104,18 @@ class SimpleSubscription(Document):
 @frappe.whitelist()
 def create_current_invoice(subscription_name: str, silent=False):
 	subscription = frappe.get_doc("Simple Subscription", subscription_name)
-	from_date, to_date = get_from_and_to_date(
-		frequency=Frequency[subscription.frequency],
-		eval_date=date.today(),
-		period_type=PeriodType(subscription.period_type),
-		billing_time=BillingTime(subscription.billing_time),
-		start_date=subscription.start_date,
-	)
+	try:
+		from_date, to_date = get_from_and_to_date(
+			frequency=Frequency[subscription.frequency],
+			eval_date=date.today(),
+			period_type=PeriodType(subscription.period_type),
+			billing_time=BillingTime(subscription.billing_time),
+			start_date=subscription.start_date,
+		)
+	except ValueError as e:
+		if not silent:
+			frappe.throw(str(e))
+		return
 
 	# check that start_date is not in the future
 	if subscription.start_date and subscription.start_date > from_date:
@@ -184,6 +189,8 @@ def get_from_and_to_date(
 	if not billing_time:
 		billing_time = BillingTime.AfterEndOfPeriod
 
+	start_year = start_date.year if start_date else None
+
 	if period_type == PeriodType.StartDate and billing_time == BillingTime.AtBeginningOfPeriod:
 		return get_date_period(eval_date, frequency, start_date)
 	elif period_type == PeriodType.StartDate and billing_time == BillingTime.AfterEndOfPeriod:
@@ -194,10 +201,10 @@ def get_from_and_to_date(
 			start_date,
 		)
 	elif period_type == PeriodType.CalendarMonths and billing_time == BillingTime.AtBeginningOfPeriod:
-		return get_calendar_period(eval_date, frequency, start_date)
+		return get_calendar_period(eval_date, frequency, start_year)
 	elif period_type == PeriodType.CalendarMonths and billing_time == BillingTime.AfterEndOfPeriod:
-		current_period_start, _ = get_calendar_period(eval_date, frequency, start_date)
-		return get_calendar_period(current_period_start - timedelta(days=1), frequency, start_date)
+		current_period_start, _ = get_calendar_period(eval_date, frequency, start_year)
+		return get_calendar_period(current_period_start - timedelta(days=1), frequency, start_year)
 
 
 def validate_calendar_frequencies(period_type: str, frequency: str, start_date: date | None) -> None:
@@ -213,19 +220,14 @@ def validate_calendar_frequencies(period_type: str, frequency: str, start_date: 
 
 
 def get_calendar_period(
-	eval_date: date, frequency: Frequency, start_date: date | None = None
+	eval_date: date, frequency: Frequency, start_year: int | None = None
 ) -> tuple[date, date]:
 	"""Return the first and last day of the calendar period containing `eval_date`."""
-	if frequency in MULTI_YEAR_FREQUENCIES and not start_date:
-		frappe.throw(
-			_("Start Date is required for frequency {0}.").format(
-				_(frequency.name, context="Frequency of Subscription")
-			)
-		)
-
 	if frequency in MULTI_YEAR_FREQUENCIES:
+		if not start_year:
+			raise ValueError("start_year is required for multi-year frequencies")
 		years_span = frequency.value // 12
-		block_start_year = start_date.year + ((eval_date.year - start_date.year) // years_span) * years_span
+		block_start_year = start_year + ((eval_date.year - start_year) // years_span) * years_span
 		from_date = date(block_start_year, 1, 1)
 	else:
 		from_date = eval_date.replace(day=1, month=INVOICE_MONTH_MAP[frequency][eval_date.month - 1])
