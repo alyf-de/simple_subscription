@@ -200,16 +200,9 @@ def get_from_and_to_date(
 	if not billing_time:
 		billing_time = BillingTime.AfterEndOfPeriod
 
-<<<<<<< HEAD
-	if (
-		period_type == PeriodType.StartDate
-		and billing_time == BillingTime.AtBeginningOfPeriod
-	):
-=======
 	start_year = start_date.year if start_date else None
 
 	if period_type == PeriodType.StartDate and billing_time == BillingTime.AtBeginningOfPeriod:
->>>>>>> 57f176b (feat: add bieannial and triannial billing frequency (#8))
 		return get_date_period(eval_date, frequency, start_date)
 	elif (
 		period_type == PeriodType.StartDate
@@ -223,46 +216,6 @@ def get_from_and_to_date(
 			frequency,
 			start_date,
 		)
-<<<<<<< HEAD
-	elif (
-		period_type == PeriodType.CalendarMonths
-		and billing_time == BillingTime.AtBeginningOfPeriod
-	):
-		return get_calendar_period(eval_date, frequency)
-	elif (
-		period_type == PeriodType.CalendarMonths
-		and billing_time == BillingTime.AfterEndOfPeriod
-	):
-		current_period_start, current_period_end = get_calendar_period(
-			eval_date, frequency
-		)
-		return get_calendar_period(current_period_start - timedelta(days=1), frequency)
-
-
-def get_calendar_period(eval_date: date, frequency: Frequency) -> Tuple[date, date]:
-	"""Return the first day and last day of the period containing `from_date`."""
-	invoice_month_map = {
-		Frequency.Monthly: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-		Frequency.Quarterly: [1, 1, 1, 4, 4, 4, 7, 7, 7, 10, 10, 10],
-		Frequency.Halfyearly: [1, 1, 1, 1, 1, 1, 7, 7, 7, 7, 7, 7],
-		Frequency.Yearly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-	}
-	no_of_month_map = {
-		Frequency.Monthly: 1,
-		Frequency.Quarterly: 3,
-		Frequency.Halfyearly: 6,
-		Frequency.Yearly: 12,
-	}
-
-	from_date = eval_date.replace(
-		day=1, month=invoice_month_map[frequency][eval_date.month - 1]
-	)
-	to_date = (
-		from_date
-		+ relativedelta(months=no_of_month_map[frequency])
-		- relativedelta(days=1)
-	)
-=======
 	elif period_type == PeriodType.CalendarMonths and billing_time == BillingTime.AtBeginningOfPeriod:
 		return get_calendar_period(eval_date, frequency, start_year)
 	elif period_type == PeriodType.CalendarMonths and billing_time == BillingTime.AfterEndOfPeriod:
@@ -280,7 +233,6 @@ def validate_calendar_frequencies(period_type: str, frequency: str, start_date: 
 				_(frequency, context="Frequency of Subscription")
 			)
 		)
->>>>>>> 57f176b (feat: add bieannial and triannial billing frequency (#8))
 
 
 def get_calendar_period(
@@ -300,49 +252,18 @@ def get_calendar_period(
 	return from_date, to_date
 
 
-<<<<<<< HEAD
-def get_date_period(
-	eval_date: date, frequency: Frequency, initial_date: date
-) -> Tuple[date, date]:
-	no_of_month_map = {
-		Frequency.Monthly: 1,
-		Frequency.Quarterly: 3,
-		Frequency.Halfyearly: 6,
-		Frequency.Yearly: 12,
-	}
-=======
 def get_date_period(eval_date: date, frequency: Frequency, initial_date: date) -> tuple[date, date]:
 	months = frequency.value
->>>>>>> 57f176b (feat: add bieannial and triannial billing frequency (#8))
 
 	delta = relativedelta(eval_date, initial_date)
 
 	# determine no of period eval_date lies in when starting on initial_date
 	if eval_date >= initial_date:
-<<<<<<< HEAD
-		month_detla_floor = (delta.years * 12 + delta.months) // no_of_month_map[
-			frequency
-		]
-	else:
-		month_detla_floor = (delta.years * 12 + delta.months - 1) // no_of_month_map[
-			frequency
-		]
-
-	from_date = initial_date + relativedelta(
-		months=(no_of_month_map[frequency] * month_detla_floor)
-	)
-	to_date = (
-		from_date
-		+ relativedelta(months=no_of_month_map[frequency])
-		- relativedelta(days=1)
-	)
-=======
 		month_detla_floor = (delta.years * 12 + delta.months) // months
 	else:
 		month_detla_floor = (delta.years * 12 + delta.months - 1) // months
 
 	from_date = initial_date + relativedelta(months=(months * month_detla_floor))
 	to_date = from_date + relativedelta(months=months) - relativedelta(days=1)
->>>>>>> 57f176b (feat: add bieannial and triannial billing frequency (#8))
 
 	return from_date, to_date

@@ -10,13 +10,10 @@ from .simple_subscription import (
 	get_calendar_period,
 	get_date_period,
 	get_from_and_to_date,
-<<<<<<< HEAD
 	Frequency,
 	PeriodType,
 	BillingTime,
-=======
 	validate_calendar_frequencies,
->>>>>>> 57f176b (feat: add bieannial and triannial billing frequency (#8))
 )
 
 
