@@ -8,6 +8,8 @@ from dateutil.relativedelta import relativedelta
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
 from erpnext.accounts.party import get_party_details
 from frappe import _
+from frappe.contacts.doctype.address.address import get_address_display
+from frappe.contacts.doctype.contact.contact import get_contact_details
 from frappe.model.document import Document
 from frappe.utils import today
 
@@ -41,9 +43,56 @@ class BillingTime(Enum):
 	AfterEndOfPeriod = "after end of period"
 
 
+# forwarded to the Sales Invoice, which uses the same fieldnames
+CUSTOMER_LINK_FIELDS: dict[str, str] = {
+	"customer_address": "Address",
+	"shipping_address_name": "Address",
+	"contact_person": "Contact",
+}
+
+
 class SimpleSubscription(Document):
+	@property
+	def billing_address_display(self) -> str | None:
+		return get_address_display(self.customer_address)
+
+	@property
+	def shipping_address_display(self) -> str | None:
+		return get_address_display(self.shipping_address_name)
+
+	@property
+	def contact_display(self) -> str | None:
+		if not self.contact_person:
+			return None
+		return frappe.db.get_value("Contact", self.contact_person, "full_name")
+
 	def validate(self):
 		validate_calendar_frequencies(self.period_type, self.frequency, self.start_date)
+		self.validate_customer_links()
+
+	def validate_customer_links(self) -> None:
+		"""The .js queries filter by customer, but the customer can change afterwards."""
+		for fieldname, doctype in CUSTOMER_LINK_FIELDS.items():
+			name = self.get(fieldname)
+			if not name:
+				continue
+
+			if not frappe.db.exists(
+				"Dynamic Link",
+				{
+					"parenttype": doctype,
+					"parent": name,
+					"link_doctype": "Customer",
+					"link_name": self.customer,
+				},
+			):
+				frappe.throw(
+					_("{0} {1} does not belong to Customer {2}.").format(
+						_(self.meta.get_label(fieldname)),
+						frappe.bold(name),
+						frappe.bold(self.customer),
+					)
+				)
 
 	def create_invoice(self, from_date: date, to_date: date) -> SalesInvoice:
 		msg = None
@@ -62,6 +111,8 @@ class SimpleSubscription(Document):
 		invoice = frappe.new_doc("Sales Invoice")
 		invoice.company = self.company
 		invoice.customer = self.customer
+		invoice.customer_address = self.customer_address
+		invoice.shipping_address_name = self.shipping_address_name
 		invoice.selling_price_list = self.get_price_list()
 		for row in self.items:
 			invoice.append(
@@ -76,6 +127,9 @@ class SimpleSubscription(Document):
 		invoice.to_date = to_date
 		invoice.simple_subscription = self.name
 		invoice.set_missing_values()
+		if self.contact_person:
+			# set_missing_values() would have filled in the customer's primary contact instead
+			invoice.update(get_contact_details(self.contact_person))
 		return invoice.insert()
 
 	def get_price_list(self) -> str | None:

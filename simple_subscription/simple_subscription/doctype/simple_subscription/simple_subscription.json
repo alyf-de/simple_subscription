@@ -17,6 +17,14 @@
   "billing_time",
   "frequency",
   "disabled",
+  "additional_customer_data_section",
+  "customer_address",
+  "billing_address_display",
+  "shipping_address_name",
+  "shipping_address_display",
+  "column_break_beul",
+  "contact_person",
+  "contact_display",
   "section_break_5",
   "items",
   "section_break_7",
@@ -125,6 +133,56 @@
    "label": "Currency",
    "options": "Currency",
    "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "description": "Optional. If empty, defaults are set on invoice generation",
+   "fieldname": "additional_customer_data_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Customer Data"
+  },
+  {
+   "fieldname": "customer_address",
+   "fieldtype": "Link",
+   "label": "Billing Address Name",
+   "options": "Address"
+  },
+  {
+   "fieldname": "billing_address_display",
+   "fieldtype": "Text Editor",
+   "is_virtual": 1,
+   "label": "Billing Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipping_address_name",
+   "fieldtype": "Link",
+   "label": "Shipping Address Name",
+   "options": "Address"
+  },
+  {
+   "fieldname": "shipping_address_display",
+   "fieldtype": "Text Editor",
+   "is_virtual": 1,
+   "label": "Shipping Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_beul",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_person",
+   "fieldtype": "Link",
+   "label": "Billing Contact Name",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "contact_display",
+   "fieldtype": "Small Text",
+   "is_virtual": 1,
+   "label": "Contact",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
@@ -134,7 +192,7 @@
    "link_fieldname": "simple_subscription"
   }
  ],
- "modified": "2026-06-15 11:53:49.870013",
+ "modified": "2026-09-07 12:41:55.374840",
  "modified_by": "Administrator",
  "module": "Simple Subscription",
  "name": "Simple Subscription",

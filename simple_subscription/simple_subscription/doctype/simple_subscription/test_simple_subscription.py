@@ -5,6 +5,7 @@ import unittest
 from datetime import date
 
 import frappe
+from frappe.tests import IntegrationTestCase
 
 from .simple_subscription import (
 	BillingTime,
@@ -196,3 +197,88 @@ class TestSimpleSubscription(unittest.TestCase):
 		)
 		self.assertEqual(from_date, date(2020, 1, 1))
 		self.assertEqual(to_date, date(2021, 12, 31))
+
+
+class TestSubscriptionCustomerData(IntegrationTestCase):
+	"""Address/Contact prefill: customer-bound validation and forwarding to the invoice."""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.customer = frappe.get_doc(doctype="Customer", customer_name="_Test Sub Customer").insert()
+		cls.other_customer = frappe.get_doc(
+			doctype="Customer", customer_name="_Test Sub Other Customer"
+		).insert()
+		cls.address = make_address("_Test Sub Billing", cls.customer.name, "Rechnungsweg 1")
+		cls.shipping_address = make_address("_Test Sub Shipping", cls.customer.name, "Lieferweg 2")
+		cls.other_address = make_address("_Test Sub Foreign", cls.other_customer.name, "Fremdweg 3")
+		cls.contact = make_contact("_Test Sub Contact", cls.customer.name)
+
+	def make_subscription(self, **kwargs):
+		return frappe.get_doc(
+			doctype="Simple Subscription",
+			company="_Test Company",
+			customer=self.customer.name,
+			start_date="2024-01-01",
+			frequency="Yearly",
+			items=[{"item": "_Test Item", "qty": 1}],
+			**kwargs,
+		)
+
+	def test_rejects_address_of_another_customer(self):
+		subscription = self.make_subscription(customer_address=self.other_address)
+		self.assertRaises(frappe.ValidationError, subscription.insert)
+
+	def test_virtual_fields_render_linked_records(self):
+		subscription = self.make_subscription(
+			customer_address=self.address,
+			shipping_address_name=self.shipping_address,
+			contact_person=self.contact,
+		).insert()
+
+		self.assertIn("Rechnungsweg 1", subscription.billing_address_display)
+		self.assertIn("Lieferweg 2", subscription.shipping_address_display)
+		self.assertEqual(subscription.contact_display, "_Test Sub Contact")
+
+	def test_forwards_links_to_invoice(self):
+		subscription = self.make_subscription(
+			customer_address=self.address,
+			shipping_address_name=self.shipping_address,
+			contact_person=self.contact,
+		).insert()
+		subscription.submit()
+
+		invoice = subscription.create_invoice(date(2024, 1, 1), date(2024, 12, 31))
+
+		self.assertIn(invoice.customer_address, (self.address, self.shipping_address))
+		self.assertEqual(invoice.shipping_address_name, self.shipping_address)
+		self.assertEqual(invoice.contact_person, self.contact)
+		self.assertEqual(invoice.contact_display, "_Test Sub Contact")
+
+	def test_invoice_falls_back_to_customer_defaults(self):
+		subscription = self.make_subscription().insert()
+		subscription.submit()
+
+		invoice = subscription.create_invoice(date(2024, 1, 1), date(2024, 12, 31))
+
+		self.assertIn(invoice.customer_address, (self.address, self.shipping_address))
+
+
+def make_address(title: str, customer: str, line1: str) -> str:
+	return frappe.get_doc(
+		doctype="Address",
+		address_title=title,
+		address_type="Billing",
+		address_line1=line1,
+		city="Berlin",
+		country="Germany",
+		links=[{"link_doctype": "Customer", "link_name": customer}],
+	).insert().name
+
+
+def make_contact(first_name: str, customer: str) -> str:
+	return frappe.get_doc(
+		doctype="Contact",
+		first_name=first_name,
+		links=[{"link_doctype": "Customer", "link_name": customer}],
+	).insert().name
