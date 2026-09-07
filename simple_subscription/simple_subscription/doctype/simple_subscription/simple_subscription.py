@@ -70,6 +70,9 @@ class SimpleSubscription(Document):
 		validate_calendar_frequencies(self.period_type, self.frequency, self.start_date)
 		self.validate_customer_links()
 
+	def before_update_after_submit(self):
+		self.validate_customer_links()
+
 	def validate_customer_links(self) -> None:
 		"""The .js queries filter by customer, but the customer can change afterwards."""
 		for fieldname, doctype in CUSTOMER_LINK_FIELDS.items():
