@@ -5,7 +5,6 @@ import unittest
 from datetime import date
 
 import frappe
-from frappe.tests import IntegrationTestCase
 
 from .simple_subscription import (
 	BillingTime,
@@ -199,35 +198,63 @@ class TestSimpleSubscription(unittest.TestCase):
 		self.assertEqual(to_date, date(2021, 12, 31))
 
 
-class TestSubscriptionCustomerData(IntegrationTestCase):
-	"""Address/Contact prefill: customer-bound validation and forwarding to the invoice."""
+class TestSubscriptionCustomerData(unittest.TestCase):
+	"""Address/Contact prefill: customer-bound validation and forwarding to the invoice.
+
+	Deliberately a plain TestCase: frappe.tests.IntegrationTestCase would resolve the test
+	record dependencies of Simple Subscription, which pulls in ERPNext's whole object graph
+	(including every Company test record) and breaks on a fresh site. Everything needed here
+	is created below instead.
+	"""
 
 	@classmethod
 	def setUpClass(cls):
 		super().setUpClass()
-		cls.customer = frappe.get_doc(doctype="Customer", customer_name="_Test Sub Customer").insert()
-		cls.other_customer = frappe.get_doc(
-			doctype="Customer", customer_name="_Test Sub Other Customer"
-		).insert()
-		cls.address = make_address("_Test Sub Billing", cls.customer.name, "Rechnungsweg 1")
-		cls.shipping_address = make_address("_Test Sub Shipping", cls.customer.name, "Lieferweg 2")
-		cls.other_address = make_address("_Test Sub Foreign", cls.other_customer.name, "Fremdweg 3")
-		cls.contact = make_contact("_Test Sub Contact", cls.customer.name)
+		cls.currency = frappe.defaults.get_global_default("currency")
+		cls.company = make_company(cls.currency)
+		cls.item = make_item()
+		cls.customer = make_customer("_Test Sub Customer")
+		cls.other_customer = make_customer("_Test Sub Other Customer")
+		cls.address = make_address("_Test Sub Billing", cls.customer, "Rechnungsweg 1", primary=True)
+		cls.shipping_address = make_address("_Test Sub Shipping", cls.customer, "Lieferweg 2", shipping=True)
+		cls.other_address = make_address("_Test Sub Foreign", cls.other_customer, "Fremdweg 3")
+		cls.contact = make_contact("_Test Sub Contact", cls.customer)
+		cls.other_contact = make_contact("_Test Sub Foreign Contact", cls.other_customer)
+		frappe.db.commit()
+
+	def tearDown(self):
+		frappe.db.rollback()
 
 	def make_subscription(self, **kwargs):
 		return frappe.get_doc(
 			doctype="Simple Subscription",
-			company="_Test Company",
-			customer=self.customer.name,
+			company=self.company,
+			customer=self.customer,
+			currency=self.currency,
 			start_date="2024-01-01",
 			frequency="Yearly",
-			items=[{"item": "_Test Item", "qty": 1}],
+			items=[{"item": self.item, "qty": 1}],
 			**kwargs,
 		)
 
-	def test_rejects_address_of_another_customer(self):
-		subscription = self.make_subscription(customer_address=self.other_address)
-		self.assertRaises(frappe.ValidationError, subscription.insert)
+	def test_rejects_links_of_another_customer(self):
+		for fieldname, value in (
+			("customer_address", self.other_address),
+			("shipping_address_name", self.other_address),
+			("contact_person", self.other_contact),
+		):
+			with self.subTest(fieldname=fieldname):
+				subscription = self.make_subscription(**{fieldname: value})
+				self.assertRaises(frappe.ValidationError, subscription.insert)
+
+	def test_rejects_links_still_stale_after_submit(self):
+		"""The links are allow_on_submit, so validate() no longer guards them."""
+		subscription = self.make_subscription(customer_address=self.address).insert()
+		subscription.submit()
+
+		subscription.customer_address = self.other_address
+		# must be the ownership check, not the generic "cannot change after submit" guard
+		self.assertRaisesRegex(frappe.ValidationError, "does not belong to Customer", subscription.save)
 
 	def test_virtual_fields_render_linked_records(self):
 		subscription = self.make_subscription(
@@ -240,6 +267,13 @@ class TestSubscriptionCustomerData(IntegrationTestCase):
 		self.assertIn("Lieferweg 2", subscription.shipping_address_display)
 		self.assertEqual(subscription.contact_display, "_Test Sub Contact")
 
+	def test_virtual_fields_are_empty_without_links(self):
+		subscription = self.make_subscription().insert()
+
+		self.assertIsNone(subscription.billing_address_display)
+		self.assertIsNone(subscription.shipping_address_display)
+		self.assertIsNone(subscription.contact_display)
+
 	def test_forwards_links_to_invoice(self):
 		subscription = self.make_subscription(
 			customer_address=self.address,
@@ -250,9 +284,10 @@ class TestSubscriptionCustomerData(IntegrationTestCase):
 
 		invoice = subscription.create_invoice(date(2024, 1, 1), date(2024, 12, 31))
 
-		self.assertIn(invoice.customer_address, (self.address, self.shipping_address))
+		self.assertEqual(invoice.customer_address, self.address)
 		self.assertEqual(invoice.shipping_address_name, self.shipping_address)
 		self.assertEqual(invoice.contact_person, self.contact)
+		# the whole contact block must come from the chosen contact, not the customer default
 		self.assertEqual(invoice.contact_display, "_Test Sub Contact")
 
 	def test_invoice_falls_back_to_customer_defaults(self):
@@ -261,24 +296,67 @@ class TestSubscriptionCustomerData(IntegrationTestCase):
 
 		invoice = subscription.create_invoice(date(2024, 1, 1), date(2024, 12, 31))
 
-		self.assertIn(invoice.customer_address, (self.address, self.shipping_address))
+		self.assertEqual(invoice.customer_address, self.address)
+		self.assertEqual(invoice.shipping_address_name, self.shipping_address)
 
 
-def make_address(title: str, customer: str, line1: str) -> str:
-	return frappe.get_doc(
-		doctype="Address",
-		address_title=title,
-		address_type="Billing",
-		address_line1=line1,
-		city="Berlin",
-		country="Germany",
-		links=[{"link_doctype": "Customer", "link_name": customer}],
-	).insert().name
+def make_company(currency: str) -> str:
+	"""A company in the site's own currency, so the invoice does not trip the party-account check."""
+	name = "_Test Sub Company"
+	if not frappe.db.exists("Company", name):
+		frappe.get_doc(
+			doctype="Company",
+			company_name=name,
+			abbr="_TSC",
+			default_currency=currency,
+			country="Germany",
+		).insert()
+	return name
+
+
+def make_item() -> str:
+	name = "_Test Sub Item"
+	if not frappe.db.exists("Item", name):
+		frappe.get_doc(
+			doctype="Item",
+			item_code=name,
+			item_group="All Item Groups",
+			stock_uom="Nos",
+			is_stock_item=0,
+			is_sales_item=1,
+		).insert()
+	return name
+
+
+def make_customer(name: str) -> str:
+	if not frappe.db.exists("Customer", name):
+		frappe.get_doc(doctype="Customer", customer_name=name).insert()
+	return name
+
+
+def make_address(title: str, customer: str, line1: str, primary=False, shipping=False) -> str:
+	name = f"{title}-Billing"
+	if not frappe.db.exists("Address", name):
+		frappe.get_doc(
+			doctype="Address",
+			address_title=title,
+			address_type="Billing",
+			address_line1=line1,
+			city="Berlin",
+			country="Germany",
+			is_primary_address=int(primary),
+			is_shipping_address=int(shipping),
+			links=[{"link_doctype": "Customer", "link_name": customer}],
+		).insert()
+	return name
 
 
 def make_contact(first_name: str, customer: str) -> str:
-	return frappe.get_doc(
-		doctype="Contact",
-		first_name=first_name,
-		links=[{"link_doctype": "Customer", "link_name": customer}],
-	).insert().name
+	name = f"{first_name}-{customer}"
+	if not frappe.db.exists("Contact", name):
+		frappe.get_doc(
+			doctype="Contact",
+			first_name=first_name,
+			links=[{"link_doctype": "Customer", "link_name": customer}],
+		).insert()
+	return name
