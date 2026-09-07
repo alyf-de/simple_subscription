@@ -54,15 +54,20 @@ frappe.ui.form.on("Simple Subscription", {
 	},
 
 	contact_person: function (frm) {
-		if (!frm.doc.contact_person) {
+		const contact = frm.doc.contact_person;
+		if (!contact) {
 			frm.set_value("contact_display", "");
 			return;
 		}
 
 		frappe.call({
 			method: "frappe.contacts.doctype.contact.contact.get_contact_details",
-			args: { contact: frm.doc.contact_person },
-			callback: (r) => r.message && frm.set_value("contact_display", r.message.contact_display),
+			args: { contact },
+			callback: (r) =>
+				// the selection may have moved on while the call was in flight
+				r.message &&
+				frm.doc.contact_person === contact &&
+				frm.set_value("contact_display", r.message.contact_display),
 		});
 	},
 
