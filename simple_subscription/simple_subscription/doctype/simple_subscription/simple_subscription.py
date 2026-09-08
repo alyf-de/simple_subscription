@@ -114,8 +114,9 @@ class SimpleSubscription(Document):
 		invoice = frappe.new_doc("Sales Invoice")
 		invoice.company = self.company
 		invoice.customer = self.customer
-		invoice.customer_address = self.customer_address if self.customer_address else None
-		invoice.shipping_address_name = self.shipping_address_name if self.shipping_address_name else None
+		# '' is not None, so update_if_missing() in set_missing_values() would keep it and skip the default
+		invoice.customer_address = self.customer_address or None
+		invoice.shipping_address_name = self.shipping_address_name or None
 		invoice.selling_price_list = self.get_price_list()
 		for row in self.items:
 			invoice.append(
@@ -125,7 +126,7 @@ class SimpleSubscription(Document):
 					"qty": row.qty,
 				},
 			)
-		invoice.taxes_and_charges = self.taxes_and_charges
+		invoice.taxes_and_charges = self.taxes_and_charges or None
 		invoice.from_date = from_date
 		invoice.to_date = to_date
 		invoice.simple_subscription = self.name
