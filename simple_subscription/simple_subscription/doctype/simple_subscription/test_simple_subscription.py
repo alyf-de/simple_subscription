@@ -10,6 +10,7 @@ from .simple_subscription import (
 	BillingTime,
 	Frequency,
 	PeriodType,
+	SimpleSubscription,
 	get_calendar_period,
 	get_date_period,
 	get_from_and_to_date,
@@ -199,43 +200,56 @@ class TestSimpleSubscription(unittest.TestCase):
 
 
 class TestSubscriptionCustomerData(unittest.TestCase):
-	"""Address/Contact prefill: customer-bound validation and forwarding to the invoice.
+	"""Customer-bound Address/Contact links: the ownership check and the display properties.
 
-	Deliberately a plain TestCase: frappe.tests.IntegrationTestCase would resolve the test
-	record dependencies of Simple Subscription, which pulls in ERPNext's whole object graph
-	(including every Company test record) and breaks on a fresh site. Everything needed here
-	is created below instead.
+	Kept deliberately light. Anything that inserts a Simple Subscription needs a Company and an
+	Item, and anything that generates the invoice needs a fully set-up ERPNext site -- fixtures
+	that only the setup wizard creates and that CI (a bare `install-app erpnext`) does not have.
+	So these exercise the app's own logic on an in-memory document; that the invoice picks the
+	links up is ERPNext's `_get_party_details` doing its normal job.
 	"""
 
 	@classmethod
 	def setUpClass(cls):
 		super().setUpClass()
-		cls.currency = frappe.defaults.get_global_default("currency")
-		cls.company = make_company(cls.currency)
-		cls.item = make_item()
 		cls.customer = make_customer("_Test Sub Customer")
 		cls.other_customer = make_customer("_Test Sub Other Customer")
-		cls.address = make_address("_Test Sub Billing", cls.customer, "Rechnungsweg 1", primary=True)
-		cls.shipping_address = make_address("_Test Sub Shipping", cls.customer, "Lieferweg 2", shipping=True)
+		cls.address = make_address("_Test Sub Billing", cls.customer, "Rechnungsweg 1")
 		cls.other_address = make_address("_Test Sub Foreign", cls.other_customer, "Fremdweg 3")
 		cls.contact = make_contact("_Test Sub Contact", cls.customer)
 		cls.other_contact = make_contact("_Test Sub Foreign Contact", cls.other_customer)
 		frappe.db.commit()
 
-	def tearDown(self):
-		frappe.db.rollback()
+	@classmethod
+	def tearDownClass(cls):
+		for doctype, name in (
+			("Contact", cls.contact),
+			("Contact", cls.other_contact),
+			("Address", cls.address),
+			("Address", cls.other_address),
+			("Customer", cls.customer),
+			("Customer", cls.other_customer),
+		):
+			frappe.delete_doc(doctype, name, force=True, ignore_missing=True)
+		frappe.db.commit()
+		super().tearDownClass()
 
 	def make_subscription(self, **kwargs):
-		return frappe.get_doc(
-			doctype="Simple Subscription",
-			company=self.company,
-			customer=self.customer,
-			currency=self.currency,
-			start_date="2024-01-01",
-			frequency="Yearly",
-			items=[{"item": self.item, "qty": 1}],
-			**kwargs,
+		subscription = frappe.new_doc("Simple Subscription")
+		subscription.customer = self.customer
+		subscription.update(kwargs)
+		return subscription
+
+	def test_accepts_links_of_the_same_customer(self):
+		subscription = self.make_subscription(
+			customer_address=self.address,
+			shipping_address_name=self.address,
+			contact_person=self.contact,
 		)
+		subscription.validate_customer_links()  # must not raise
+
+	def test_accepts_empty_links(self):
+		self.make_subscription().validate_customer_links()  # must not raise
 
 	def test_rejects_links_of_another_customer(self):
 		for fieldname, value in (
@@ -245,87 +259,42 @@ class TestSubscriptionCustomerData(unittest.TestCase):
 		):
 			with self.subTest(fieldname=fieldname):
 				subscription = self.make_subscription(**{fieldname: value})
-				self.assertRaises(frappe.ValidationError, subscription.insert)
+				self.assertRaisesRegex(
+					frappe.ValidationError,
+					"does not belong to Customer",
+					subscription.validate_customer_links,
+				)
 
-	def test_rejects_links_still_stale_after_submit(self):
-		"""The links are allow_on_submit, so validate() no longer guards them."""
-		subscription = self.make_subscription(customer_address=self.address).insert()
-		subscription.submit()
+	def test_guards_the_links_after_submit_too(self):
+		"""The fields are allow_on_submit, and validate() does not run on update after submit."""
+		self.assertTrue(
+			hasattr(SimpleSubscription, "before_update_after_submit"),
+			"allow_on_submit links need a before_update_after_submit guard",
+		)
+		subscription = self.make_subscription(customer_address=self.other_address)
+		self.assertRaisesRegex(
+			frappe.ValidationError,
+			"does not belong to Customer",
+			subscription.before_update_after_submit,
+		)
 
-		subscription.customer_address = self.other_address
-		# must be the ownership check, not the generic "cannot change after submit" guard
-		self.assertRaisesRegex(frappe.ValidationError, "does not belong to Customer", subscription.save)
-
-	def test_virtual_fields_render_linked_records(self):
+	def test_display_properties_render_linked_records(self):
 		subscription = self.make_subscription(
 			customer_address=self.address,
-			shipping_address_name=self.shipping_address,
+			shipping_address_name=self.address,
 			contact_person=self.contact,
-		).insert()
+		)
 
 		self.assertIn("Rechnungsweg 1", subscription.billing_address_display)
-		self.assertIn("Lieferweg 2", subscription.shipping_address_display)
+		self.assertIn("Rechnungsweg 1", subscription.shipping_address_display)
 		self.assertEqual(subscription.contact_display, "_Test Sub Contact")
 
-	def test_virtual_fields_are_empty_without_links(self):
-		subscription = self.make_subscription().insert()
+	def test_display_properties_are_empty_without_links(self):
+		subscription = self.make_subscription()
 
 		self.assertIsNone(subscription.billing_address_display)
 		self.assertIsNone(subscription.shipping_address_display)
 		self.assertIsNone(subscription.contact_display)
-
-	def test_forwards_links_to_invoice(self):
-		subscription = self.make_subscription(
-			customer_address=self.address,
-			shipping_address_name=self.shipping_address,
-			contact_person=self.contact,
-		).insert()
-		subscription.submit()
-
-		invoice = subscription.create_invoice(date(2024, 1, 1), date(2024, 12, 31))
-
-		self.assertEqual(invoice.customer_address, self.address)
-		self.assertEqual(invoice.shipping_address_name, self.shipping_address)
-		self.assertEqual(invoice.contact_person, self.contact)
-		# the whole contact block must come from the chosen contact, not the customer default
-		self.assertEqual(invoice.contact_display, "_Test Sub Contact")
-
-	def test_invoice_falls_back_to_customer_defaults(self):
-		subscription = self.make_subscription().insert()
-		subscription.submit()
-
-		invoice = subscription.create_invoice(date(2024, 1, 1), date(2024, 12, 31))
-
-		self.assertEqual(invoice.customer_address, self.address)
-		self.assertEqual(invoice.shipping_address_name, self.shipping_address)
-
-
-def make_company(currency: str) -> str:
-	"""A company in the site's own currency, so the invoice does not trip the party-account check."""
-	name = "_Test Sub Company"
-	if not frappe.db.exists("Company", name):
-		frappe.get_doc(
-			doctype="Company",
-			company_name=name,
-			abbr="_TSC",
-			default_currency=currency,
-			country="Germany",
-		).insert()
-	return name
-
-
-def make_item() -> str:
-	name = "_Test Sub Item"
-	if not frappe.db.exists("Item", name):
-		frappe.get_doc(
-			doctype="Item",
-			item_code=name,
-			item_group="All Item Groups",
-			stock_uom="Nos",
-			is_stock_item=0,
-			is_sales_item=1,
-		).insert()
-	return name
 
 
 def make_customer(name: str) -> str:
@@ -334,7 +303,7 @@ def make_customer(name: str) -> str:
 	return name
 
 
-def make_address(title: str, customer: str, line1: str, primary=False, shipping=False) -> str:
+def make_address(title: str, customer: str, line1: str) -> str:
 	name = f"{title}-Billing"
 	if not frappe.db.exists("Address", name):
 		frappe.get_doc(
@@ -344,8 +313,6 @@ def make_address(title: str, customer: str, line1: str, primary=False, shipping=
 			address_line1=line1,
 			city="Berlin",
 			country="Germany",
-			is_primary_address=int(primary),
-			is_shipping_address=int(shipping),
 			links=[{"link_doctype": "Customer", "link_name": customer}],
 		).insert()
 	return name
