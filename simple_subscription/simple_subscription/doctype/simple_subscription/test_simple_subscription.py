@@ -7,10 +7,10 @@ from datetime import date
 import frappe
 
 from .simple_subscription import (
+	CUSTOMER_LINK_FIELDS,
 	BillingTime,
 	Frequency,
 	PeriodType,
-	SimpleSubscription,
 	get_calendar_period,
 	get_date_period,
 	get_from_and_to_date,
@@ -202,37 +202,25 @@ class TestSimpleSubscription(unittest.TestCase):
 class TestSubscriptionCustomerData(unittest.TestCase):
 	"""Customer-bound Address/Contact links: the ownership check and the display properties.
 
-	Kept deliberately light. Anything that inserts a Simple Subscription needs a Company and an
-	Item, and anything that generates the invoice needs a fully set-up ERPNext site -- fixtures
-	that only the setup wizard creates and that CI (a bare `install-app erpnext`) does not have.
-	So these exercise the app's own logic on an in-memory document; that the invoice picks the
-	links up is ERPNext's `_get_party_details` doing its normal job.
+	Kept deliberately light. Generating the invoice needs a fully set-up ERPNext site -- Company,
+	Item Group, UOM, Price List, Fiscal Year -- fixtures that only the setup wizard creates and
+	that CI (a bare `install-app erpnext`) does not have. So these exercise the app's own logic on
+	an in-memory document, plus a meta check that the fieldnames create_invoice() forwards still
+	line up with the Sales Invoice.
 	"""
 
 	@classmethod
 	def setUpClass(cls):
 		super().setUpClass()
+		# never committed, so the fixtures die with the transaction -- same as IntegrationTestCase
+		cls.addClassCleanup(frappe.db.rollback)
+		make_default_address_template()
 		cls.customer = make_customer("_Test Sub Customer")
 		cls.other_customer = make_customer("_Test Sub Other Customer")
 		cls.address = make_address("_Test Sub Billing", cls.customer, "Rechnungsweg 1")
 		cls.other_address = make_address("_Test Sub Foreign", cls.other_customer, "Fremdweg 3")
 		cls.contact = make_contact("_Test Sub Contact", cls.customer)
 		cls.other_contact = make_contact("_Test Sub Foreign Contact", cls.other_customer)
-		frappe.db.commit()
-
-	@classmethod
-	def tearDownClass(cls):
-		for doctype, name in (
-			("Contact", cls.contact),
-			("Contact", cls.other_contact),
-			("Address", cls.address),
-			("Address", cls.other_address),
-			("Customer", cls.customer),
-			("Customer", cls.other_customer),
-		):
-			frappe.delete_doc(doctype, name, force=True, ignore_missing=True)
-		frappe.db.commit()
-		super().tearDownClass()
 
 	def make_subscription(self, **kwargs):
 		subscription = frappe.new_doc("Simple Subscription")
@@ -266,11 +254,11 @@ class TestSubscriptionCustomerData(unittest.TestCase):
 				)
 
 	def test_guards_the_links_after_submit_too(self):
-		"""The fields are allow_on_submit, and validate() does not run on update after submit."""
-		self.assertTrue(
-			hasattr(SimpleSubscription, "before_update_after_submit"),
-			"allow_on_submit links need a before_update_after_submit guard",
-		)
+		"""The fields are allow_on_submit, so validate() no longer runs once they change."""
+		meta = frappe.get_meta("Simple Subscription")
+		for fieldname in CUSTOMER_LINK_FIELDS:
+			self.assertTrue(meta.get_field(fieldname).allow_on_submit, fieldname)
+
 		subscription = self.make_subscription(customer_address=self.other_address)
 		self.assertRaisesRegex(
 			frappe.ValidationError,
@@ -295,6 +283,25 @@ class TestSubscriptionCustomerData(unittest.TestCase):
 		self.assertIsNone(subscription.billing_address_display)
 		self.assertIsNone(subscription.shipping_address_display)
 		self.assertIsNone(subscription.contact_display)
+
+	def test_link_fields_match_the_sales_invoice(self):
+		"""create_invoice() forwards these by name, so both doctypes have to spell them the same.
+
+		The forwarding itself needs a set-up site to exercise, so this is what guards it: a
+		renamed or retyped field on either side breaks the invoice silently, and fails here.
+		"""
+		subscription_meta = frappe.get_meta("Simple Subscription")
+		invoice_meta = frappe.get_meta("Sales Invoice")
+		for fieldname, doctype in CUSTOMER_LINK_FIELDS.items():
+			with self.subTest(fieldname=fieldname):
+				self.assertEqual(subscription_meta.get_field(fieldname).options, doctype)
+				self.assertEqual(invoice_meta.get_field(fieldname).options, doctype)
+
+
+def make_default_address_template() -> None:
+	"""Address.validate() renders the address, which needs one. A bare CI site has none."""
+	if not frappe.db.exists("Address Template", {"is_default": 1}):
+		frappe.get_doc(doctype="Address Template", country="Germany", is_default=1).insert()
 
 
 def make_customer(name: str) -> str:
