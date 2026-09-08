@@ -114,8 +114,8 @@ class SimpleSubscription(Document):
 		invoice = frappe.new_doc("Sales Invoice")
 		invoice.company = self.company
 		invoice.customer = self.customer
-		invoice.customer_address = self.customer_address
-		invoice.shipping_address_name = self.shipping_address_name
+		invoice.customer_address = self.customer_address if self.customer_address else None
+		invoice.shipping_address_name = self.shipping_address_name if self.shipping_address_name else None
 		invoice.selling_price_list = self.get_price_list()
 		for row in self.items:
 			invoice.append(
