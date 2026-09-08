@@ -26,6 +26,12 @@ msgstr ""
 msgid "Accounts User"
 msgstr ""
 
+#. Label of the additional_customer_data_section (Section Break) field in
+#. DocType 'Simple Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Additional Customer Data"
+msgstr ""
+
 #. Label of the amended_from (Link) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Amended From"
@@ -34,6 +40,23 @@ msgstr ""
 #. Option for the 'Frequency' (Select) field in DocType 'Simple Subscription'
 #: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
 msgid "Biennial"
+msgstr ""
+
+#. Label of the billing_address_display (Text Editor) field in DocType
+#. 'Simple Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Billing Address"
+msgstr ""
+
+#. Label of the customer_address (Link) field in DocType 'Simple
+#. Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Billing Address Name"
+msgstr ""
+
+#. Label of the contact_person (Link) field in DocType 'Simple Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Billing Contact Name"
 msgstr ""
 
 #. Label of the period_type (Select) field in DocType 'Simple Subscription'
@@ -51,7 +74,13 @@ msgstr ""
 msgid "Company"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.js:28
+#. Label of the contact_display (Small Text) field in DocType 'Simple
+#. Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Contact"
+msgstr ""
+
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.js:73
 msgid "Create current {0} invoice"
 msgstr ""
 
@@ -87,7 +116,7 @@ msgstr ""
 msgid "Disabled"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:135
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:195
 msgid "Failed to create subscription invoice"
 msgstr ""
 
@@ -127,15 +156,21 @@ msgstr ""
 msgid "Monthly"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:57
+#. Description of the 'Additional Customer Data' (Section Break) field in
+#. DocType 'Simple Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Optional. If empty, defaults are set on invoice generation"
+msgstr ""
+
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:107
 msgid "Please amend Subscription {0} before creating a Sales Invoice."
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:51
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:101
 msgid "Please enable Subscription {0} before creating a Sales Invoice."
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:54
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:104
 msgid "Please submit Subscription {0} before creating a Sales Invoice."
 msgstr ""
 
@@ -149,13 +184,25 @@ msgstr ""
 msgid "Quarterly"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:124
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:184
 msgid "Sales Invoice already exists for this period: {}"
 msgstr ""
 
 #. Label of a Card Break in the Simple Subscription Selling Workspace
 #: simple_subscription/simple_subscription/workspace/simple_subscription_selling/simple_subscription_selling.json
 msgid "Selling"
+msgstr ""
+
+#. Label of the shipping_address_display (Text Editor) field in DocType
+#. 'Simple Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Shipping Address"
+msgstr ""
+
+#. Label of the shipping_address_name (Link) field in DocType 'Simple
+#. Subscription'
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.json
+msgid "Shipping Address Name"
 msgstr ""
 
 #. Name of a DocType
@@ -182,8 +229,7 @@ msgstr ""
 msgid "Start Date"
 msgstr ""
 
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:209
-#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:221
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:271
 msgid "Start Date is required for frequency {0}."
 msgstr ""
 
@@ -231,3 +277,6 @@ msgstr ""
 msgid "start date"
 msgstr ""
 
+#: simple_subscription/simple_subscription/doctype/simple_subscription/simple_subscription.py:90
+msgid "{0} {1} does not belong to Customer {2}."
+msgstr ""
