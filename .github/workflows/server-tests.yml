@@ -4,14 +4,10 @@ name: Server
 on:
   push:
     branches:
-<<<<<<< HEAD
       - version-14
       - version-15
-=======
-      - version-16
     paths-ignore:
       - "**/locale/main.pot"
->>>>>>> 187a112 (ci: skip tests when only main.pot changes (#13))
   pull_request:
     paths-ignore:
       - "**/locale/main.pot"
