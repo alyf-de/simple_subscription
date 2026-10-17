@@ -5,7 +5,11 @@ on:
   push:
     branches:
       - version-16
+    paths-ignore:
+      - "**/locale/main.pot"
   pull_request:
+    paths-ignore:
+      - "**/locale/main.pot"
 
 concurrency:
   group: version-16-simple_subscription-${{ github.event.number }}
