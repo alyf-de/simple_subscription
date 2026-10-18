@@ -6,7 +6,11 @@ on:
     branches:
       - version-14
       - version-15
+    paths-ignore:
+      - "**/locale/main.pot"
   pull_request:
+    paths-ignore:
+      - "**/locale/main.pot"
 
 concurrency:
   group: version-15-simple_subscription-${{ github.event.number }}
